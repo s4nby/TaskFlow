@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Check, Clock, Trash2, FilterX, Pencil, X, Star, 
-  ChevronDown, ChevronRight, GripVertical
+  ChevronDown, ChevronRight, GripVertical, Plus
 } from 'lucide-react';
 import type { Task, Priority } from '../models/types';
 
@@ -36,6 +36,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
   const [newSubTaskText, setNewSubTaskText] = useState<{ [key: string]: string }>({});
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [isAddingTask, setIsAddingTask] = useState(false);
 
   const startEditing = (task: Task) => {
     setEditingId(task.id);
@@ -80,6 +81,11 @@ const TaskListView: React.FC<TaskListViewProps> = ({
     }
   };
 
+  const handleAddTask = (e: React.FormEvent) => {
+    onAddTask(e);
+    setIsAddingTask(false);
+  };
+
   return (
     <div className="standard-page">
       <header className="header-section">
@@ -105,13 +111,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({
           <p>{tasks.length} items in this workspace</p>
         )}
       </header>
-      {!hideQuickAdd && (
-        <form className="quick-add-container" onSubmit={onAddTask}>
-          <div className="input-group themed-input-container">
-            <input type="text" className="quick-add-input" placeholder="Add task to workspace..." value={newTaskText} onChange={(e) => onSetNewTaskText(e.target.value)} />
-          </div>
-        </form>
-      )}
+
       <div className="task-list">
         {tasks.map(task => (
           <div 
@@ -200,6 +200,37 @@ const TaskListView: React.FC<TaskListViewProps> = ({
           </div>
         ))}
       </div>
+
+      {!hideQuickAdd && (
+        <div className={`add-task-trigger-container ${tasks.length === 0 ? 'empty-state' : ''}`}>
+          {!isAddingTask ? (
+            <button 
+              className="add-task-btn" 
+              onClick={() => setIsAddingTask(true)}
+              title="Add Task"
+            >
+              <Plus size={24} />
+            </button>
+          ) : (
+            <form className="quick-add-container inline-quick-add" onSubmit={handleAddTask}>
+              <div className="input-group themed-input-container">
+                <input 
+                  type="text" 
+                  className="quick-add-input" 
+                  placeholder="What needs to be done?" 
+                  value={newTaskText} 
+                  onChange={(e) => onSetNewTaskText(e.target.value)}
+                  onBlur={() => {
+                    if (!newTaskText.trim()) setIsAddingTask(false);
+                  }}
+                  autoFocus
+                />
+                <button type="submit" style={{ display: 'none' }} />
+              </div>
+            </form>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -284,6 +284,7 @@ body {
   align-items: flex-start;
   overflow: auto;
   background: var(--bg-color);
+  height: 100%;
 }
 
 .standard-page {
@@ -293,6 +294,8 @@ body {
   flex-direction: column;
   margin: 0 auto;
   padding: 24px 40px;
+  min-height: 100%;
+  box-sizing: border-box;
 }
 
 .header-section {
@@ -937,6 +940,53 @@ animation: fadeIn 0.2s ease-out;
 #app-wrapper.light-theme .priority-select option {
   background: #f5f5f5;
   color: #1a1a1a;
+}
+
+/* Dynamic Task Input Overhaul */
+.add-task-trigger-container {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+  width: 100%;
+}
+
+.add-task-trigger-container.empty-state {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.add-task-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 5;
+}
+
+.add-task-btn:hover {
+  transform: scale(1.1);
+  background: #2563eb;
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.add-task-btn:active {
+  transform: scale(0.95);
+}
+
+.inline-quick-add {
+  width: 100%;
+  margin-top: 8px;
+  animation: fadeIn 0.2s ease-out;
 }
 
 /* Animations & Utils */

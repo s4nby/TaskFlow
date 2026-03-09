@@ -64,8 +64,9 @@
     ],
     "publish": [
       {
-        "provider": "generic",
-        "url": "https://updates.taskflow.app/downloads"
+        "provider": "github",
+        "owner": "s4nby",
+        "repo": "TaskFlow"
       }
     ]
   },
