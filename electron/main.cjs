@@ -1,9 +1,27 @@
-const { app, BrowserWindow, ipcMain, Menu, nativeTheme, Notification, Tray, globalShortcut, shell, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, nativeTheme, Notification, Tray, globalShortcut, shell, dialog, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
 let mainWindow;
 let tray;
+
+// Set App ID for Windows Taskbar/Tray integration
+const appId = 'com.todolist.app';
+app.setAppUserModelId(appId);
+
+// Handle single instance lock
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+}
 
 function createTray() {
   try {
@@ -12,19 +30,21 @@ function createTray() {
       ? path.join(__dirname, '../public/vite.svg')
       : path.join(__dirname, '../dist/vite.svg');
     
-    if (!fs.existsSync(iconPath)) {
-      // Fallback if Vite didn't copy it where expected
+    let trayIcon;
+    if (fs.existsSync(iconPath)) {
+      trayIcon = nativeImage.createFromPath(iconPath);
+    } else {
+      // Fallback
       const altPath = path.join(__dirname, 'vite.svg');
       if (fs.existsSync(altPath)) {
-        tray = new Tray(altPath);
+        trayIcon = nativeImage.createFromPath(altPath);
       } else {
-        // Last resort fallback to avoid crash
-        tray = new Tray(path.join(__dirname, '../public/vite.svg'));
+        // Last resort empty image to avoid crash
+        trayIcon = nativeImage.createEmpty();
       }
-    } else {
-      tray = new Tray(iconPath);
     }
 
+    tray = new Tray(trayIcon);
     const contextMenu = Menu.buildFromTemplate([
       { label: 'TaskFlow Dashboard', click: () => { mainWindow.show(); mainWindow.webContents.send('navigate', 'hub'); } },
       { label: 'To Do List', click: () => { mainWindow.show(); mainWindow.webContents.send('navigate', 'todo'); } },
@@ -69,6 +89,7 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
       devTools: true,
+      backgroundThrottling: false, // Prevent background process categorization
     },
     backgroundColor: '#050505',
     show: false,
@@ -79,6 +100,15 @@ function createWindow() {
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
+
+  // Handle window close (redirect to tray)
+  mainWindow.on('close', (event) => {
+    if (!app.isQuitting) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+    return false;
+  });
 
   // Hide to Tray on Minimize
   mainWindow.on('minimize', (event) => {
@@ -97,11 +127,13 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
+    mainWindow.focus();
     
     // Register Global Hotkey: Alt+Shift+N for Quick Entry
     globalShortcut.register('Alt+Shift+N', () => {
       if (mainWindow) {
         mainWindow.show();
+        mainWindow.focus();
         mainWindow.webContents.send('global-new-task');
       }
     });
