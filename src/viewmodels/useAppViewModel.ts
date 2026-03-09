@@ -151,8 +151,11 @@ export const useAppViewModel = () => {
     const month = viewDate.getMonth();
     const days: DayData[] = [];
     
+    const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0=Sun, 1=Mon...
+    const offset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1; // Adjust for Mon start
+
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const nextMonthDate = new Date(year, month + 1, 1);
 
     // Group tasks and projects by date for O(1) lookup in loop
     const tasksByDate: Record<string, Task[]> = {};
@@ -171,6 +174,21 @@ export const useAppViewModel = () => {
       }
     });
 
+    // Previous month ghost days
+    for (let i = offset - 1; i >= 0; i--) {
+      const day = prevMonthLastDay - i;
+      const d = new Date(year, month - 1, day);
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      days.push({ 
+        day, 
+        isCurrentMonth: false, 
+        dateStr,
+        tasksForDate: tasksByDate[dateStr] || [],
+        projectsForDate: projectsByDate[dateStr] || []
+      });
+    }
+
+    // Current month days
     for (let i = 1; i <= daysInMonth; i++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
       days.push({ 
@@ -182,11 +200,11 @@ export const useAppViewModel = () => {
       });
     }
 
-    const remaining = 35 - days.length;
+    // Next month ghost days
+    const remaining = 35 - days.length > 0 ? 35 - days.length : (42 - days.length);
     for (let i = 1; i <= remaining; i++) {
-      const d = new Date(nextMonthDate);
-      d.setDate(i);
-      const dateStr = d.toISOString().split('T')[0];
+      const d = new Date(year, month + 1, i);
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       days.push({ 
         day: i, 
         isCurrentMonth: false, 
@@ -195,7 +213,7 @@ export const useAppViewModel = () => {
         projectsForDate: projectsByDate[dateStr] || []
       });
     }
-    return days.slice(0, 35);
+    return days;
   }, [viewDate, tasks, projectLists, activeListId]);
 
   const addTask = async (text?: string, dueDate?: string, priority: Priority = 'low') => {
@@ -223,10 +241,15 @@ export const useAppViewModel = () => {
 
   const createProject = async (name: string, date?: string) => {
     const maxIndex = projectLists.length > 0 ? Math.max(...projectLists.map(p => p.index ?? -1)) : -1;
+    
+    // Ensure we use local date string YYYY-MM-DD
+    const now = new Date();
+    const localDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    
     const newProject: ProjectList = { 
       id: Date.now().toString(), 
       name: name.trim(),
-      createdDate: date || new Date().toISOString().split('T')[0],
+      createdDate: date || localDateStr,
       index: maxIndex + 1
     };
     setProjectLists(prev => [...prev, newProject]);

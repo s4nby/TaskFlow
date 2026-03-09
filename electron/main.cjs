@@ -5,6 +5,57 @@ const fs = require('fs');
 let mainWindow;
 let tray;
 
+function createTray() {
+  try {
+    // In dev, use public/vite.svg. In prod, Vite copies public to dist.
+    const iconPath = process.env.NODE_ENV === 'development' 
+      ? path.join(__dirname, '../public/vite.svg')
+      : path.join(__dirname, '../dist/vite.svg');
+    
+    if (!fs.existsSync(iconPath)) {
+      // Fallback if Vite didn't copy it where expected
+      const altPath = path.join(__dirname, 'vite.svg');
+      if (fs.existsSync(altPath)) {
+        tray = new Tray(altPath);
+      } else {
+        // Last resort fallback to avoid crash
+        tray = new Tray(path.join(__dirname, '../public/vite.svg'));
+      }
+    } else {
+      tray = new Tray(iconPath);
+    }
+
+    const contextMenu = Menu.buildFromTemplate([
+      { label: 'TaskFlow Dashboard', click: () => { mainWindow.show(); mainWindow.webContents.send('navigate', 'hub'); } },
+      { label: 'To Do List', click: () => { mainWindow.show(); mainWindow.webContents.send('navigate', 'todo'); } },
+      { type: 'separator' },
+      { label: 'Quick Glance (Today)', click: () => { mainWindow.show(); mainWindow.webContents.send('navigate', 'calendar'); } },
+      { type: 'separator' },
+      { label: 'Quit TaskFlow', click: () => { app.isQuitting = true; app.quit(); } }
+    ]);
+    
+    tray.setToolTip('TaskFlow Productivity');
+    tray.setContextMenu(contextMenu);
+    
+    tray.on('click', () => {
+      if (mainWindow.isVisible()) {
+        if (mainWindow.isMinimized()) {
+          mainWindow.restore();
+          mainWindow.focus();
+        } else {
+          mainWindow.hide();
+        }
+      } else {
+        mainWindow.show();
+        mainWindow.restore();
+        mainWindow.focus();
+      }
+    });
+  } catch (err) {
+    console.error('Failed to create tray:', err);
+  }
+}
+
 function createWindow() {
   // Remove default menu
   Menu.setApplicationMenu(null);
@@ -29,6 +80,21 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 
+  // Hide to Tray on Minimize
+  mainWindow.on('minimize', (event) => {
+    event.preventDefault();
+    mainWindow.hide();
+  });
+
+  // Ensure window is shown in taskbar when restored
+  mainWindow.on('show', () => {
+    mainWindow.setSkipTaskbar(false);
+  });
+
+  mainWindow.on('hide', () => {
+    mainWindow.setSkipTaskbar(true);
+  });
+
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     
@@ -38,44 +104,6 @@ function createWindow() {
         mainWindow.show();
         mainWindow.webContents.send('global-new-task');
       }
-    });
-
-    // Create System Tray
-    try {
-      const iconPath = path.join(__dirname, '../public/vite.svg'); // Placeholder
-      tray = new Tray(iconPath);
-      const contextMenu = Menu.buildFromTemplate([
-        { label: 'TaskFlow Dashboard', click: () => { mainWindow.show(); mainWindow.webContents.send('navigate', 'hub'); } },
-        { label: 'To Do List', click: () => { mainWindow.show(); mainWindow.webContents.send('navigate', 'todo'); } },
-        { type: 'separator' },
-        { label: 'Quick Glance (Today)', click: () => { mainWindow.show(); mainWindow.webContents.send('navigate', 'calendar'); } },
-        { type: 'separator' },
-        { label: 'Quit TaskFlow', click: () => { app.isQuitting = true; app.quit(); } }
-      ]);
-      tray.setToolTip('TaskFlow Productivity');
-      tray.setContextMenu(contextMenu);
-      tray.on('click', () => {
-        if (mainWindow.isVisible()) {
-          if (mainWindow.isMinimized()) {
-            mainWindow.restore();
-            mainWindow.focus();
-          } else {
-            mainWindow.hide();
-          }
-        } else {
-          mainWindow.show();
-          mainWindow.restore();
-          mainWindow.focus();
-        }
-      });
-    } catch (err) {
-      console.error('Failed to create tray:', err);
-    }
-
-    // Hide to Tray on Minimize
-    mainWindow.on('minimize', (event) => {
-      event.preventDefault();
-      mainWindow.hide();
     });
 
     // Defer update check to avoid blocking startup
@@ -195,7 +223,10 @@ app.on('will-quit', () => {
   globalShortcut.unregisterAll();
 });
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  createTray();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

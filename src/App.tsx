@@ -121,6 +121,21 @@ const App: React.FC = () => {
                   onExport={handleExport}
                 />
               );
+            case 'important':
+              return (
+                <HubView 
+                  title="Favorites"
+                  projectLists={state.projectLists.filter(p => p.isPreferred)}
+                  tasks={state.tasks}
+                  onInitializeProject={() => setIsNamingModalOpen(true)}
+                  onSelectProject={(id) => {
+                    commands.setActiveListId(id);
+                  }}
+                  onDeleteProject={(id) => commands.deleteProject(id)}
+                  onExport={handleExport}
+                  hideActions={true}
+                />
+              );
             case 'calendar':
               return (
                 <CalendarView 

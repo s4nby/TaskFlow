@@ -54,7 +54,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               return (
                 <div 
                   key={idx} 
-                  className={`day-cell ${hasProjects ? 'interactive' : 'empty-cell'} ${!dayData.isCurrentMonth ? 'ghost' : ''} ${dayData.dateStr === new Date().toISOString().split('T')[0] ? 'today' : ''}`} 
+                  className={`day-cell ${hasProjects ? 'interactive' : 'empty-cell'} ${!dayData.isCurrentMonth ? 'ghost' : ''} ${dayData.dateStr === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}` ? 'today' : ''}`} 
                   onClick={hasProjects ? () => handleCellClick(dayData) : undefined}
                 >
                   <div className="day-cell-header">

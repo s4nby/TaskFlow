@@ -47,16 +47,11 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="list-icon"><List size={18} /></div>
           {isExpanded && <span className="list-name">Quick ToDoList</span>}
         </div>
-        
-        <div className="sidebar-section-header">
-          {isExpanded ? 'IMPORTANT' : <div className="divider" />}
-        </div>
-
         <div className={`list-item ${activeListId === 'important' ? 'active' : ''}`} onClick={() => onNavigate('important')}>
           <div className="list-icon"><Star size={18} /></div>
-          {isExpanded && <span className="list-name">All Important</span>}
+          {isExpanded && <span className="list-name">Favorites</span>}
         </div>
-
+        
         <div className="sidebar-section-header">
           {isExpanded ? 'PROJECTS' : <div className="divider" />}
         </div>
