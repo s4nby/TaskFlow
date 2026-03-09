@@ -408,6 +408,7 @@ export const useAppViewModel = () => {
       setTaskPriority,
       addSubTask,
       toggleSubTask,
+      updateSubTask,
       mergeTasks,
       reorderTasks,
       reorderProjects,
