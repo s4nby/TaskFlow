@@ -61,6 +61,8 @@ export const useAppViewModel = () => {
 
         ipcRenderer.on('update-downloaded', () => {
           setUpdateStatus('ready');
+          // Discord-style: Auto install immediately when ready
+          ipcRenderer.send('install-update');
         });
 
         ipcRenderer.on('update-error', (_event: any, message: string) => {

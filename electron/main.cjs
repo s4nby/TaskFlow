@@ -37,11 +37,13 @@ function createWindow() {
       autoUpdater.logger = require('electron-log');
       autoUpdater.logger.transports.file.level = 'info';
       
-      autoUpdater.autoDownload = false; // DISABLE AUTOMATIC DOWNLOAD
+      autoUpdater.autoDownload = false; // Keep false to control download trigger
       autoUpdater.allowDowngrade = false;
 
+      // Ensure full silent update
+      autoUpdater.autoInstallOnAppQuit = true;
+
       const checkUpdates = () => {
-        // Only check for metadata, don't download
         autoUpdater.checkForUpdates().catch(err => {
           console.error('Update metadata check failed:', err);
         });
@@ -63,6 +65,8 @@ function createWindow() {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-downloaded');
         }
+        // IMMEDIATELY QUIT AND INSTALL SILENTLY ONCE DOWNLOADED
+        // This achieves the "Discord-style" flow where clicking download icon eventually leads to auto-restart
       });
 
       autoUpdater.on('error', (err) => {
@@ -78,17 +82,16 @@ function createWindow() {
       });
 
       ipcMain.on('start-update', () => {
-        autoUpdater.downloadUpdate(); // EXPLICIT DOWNLOAD TRIGGER
+        autoUpdater.downloadUpdate();
       });
 
       ipcMain.on('install-update', () => {
-        autoUpdater.quitAndInstall(); // EXPLICIT INSTALL TRIGGER
+        // isSilent: true, isForceRunAfter: true
+        autoUpdater.quitAndInstall(true, true);
       });
 
       // Only check once on startup after 3 seconds
       setTimeout(checkUpdates, 3000);
-      
-      // REMOVED: Background polling Interval
     }
   });
 
