@@ -1,7 +1,7 @@
 {
   "name": "taskflow",
   "private": true,
-  "version": "1.1.1",
+  "version": "1.2.0",
   "type": "module",
   "repository": {
     "type": "git",
@@ -29,15 +29,36 @@
     ],
     "win": {
       "target": [
-        "nsis",
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "msi",
+          "arch": [
+            "x64"
+          ]
+        },
         "portable"
-      ]
+      ],
+      "verifyUpdateCodeSignature": false
     },
     "nsis": {
       "oneClick": true,
       "allowToChangeInstallationDirectory": false,
       "createDesktopShortcut": true,
-      "shortcutName": "TaskFlow"
+      "createStartMenuShortcut": true,
+      "shortcutName": "TaskFlow",
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "uninstallDisplayName": "TaskFlow",
+      "runAfterFinish": true
+    },
+    "msi": {
+      "oneClick": true,
+      "shortcutName": "TaskFlow",
+      "artifactName": "${productName}-${version}.${ext}"
     },
     "publish": [
       {
