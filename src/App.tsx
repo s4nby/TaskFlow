@@ -1,5 +1,5 @@
 import React, { useState, Suspense, lazy } from 'react';
-import { Minus, Square, X, Menu, ChevronLeft, Sun, Moon, Monitor } from 'lucide-react';
+import { Minus, Square, X, Menu, ChevronLeft, Sun, Moon, Monitor, ArrowDown } from 'lucide-react';
 import './styles/main.css';
 
 // MVVM Layers
@@ -112,6 +112,15 @@ const App: React.FC = () => {
         {/* RIGHT: WINDOW CONTROLS */}
         <div className="header-right-zone">
           <div className="window-controls-integrated">
+            {state.updateStatus !== 'none' && (
+              <button 
+                className={`glyph-btn update-indicator ${state.updateStatus}`} 
+                onClick={() => state.updateStatus === 'ready' ? commands.installUpdate() : commands.startUpdate()}
+                title={state.updateStatus === 'ready' ? 'Restart to Update' : state.updateStatus === 'downloading' ? 'Downloading...' : `Update Available (${state.availableVersion})`}
+              >
+                <ArrowDown size={16} className={state.updateStatus === 'downloading' ? 'anim-bounce' : ''} />
+              </button>
+            )}
             <button 
               className="glyph-btn" 
               onClick={toggleTheme} 

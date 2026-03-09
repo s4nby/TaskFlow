@@ -771,6 +771,23 @@ animation: fadeIn 0.2s ease-out;
   text-align: center;
 }
 
+.glyph-btn.update-indicator.available {
+  color: var(--accent-color);
+}
+
+.glyph-btn.update-indicator.ready {
+  color: #10b981; /* Green for ready */
+}
+
+.anim-bounce {
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
 /* Animations & Utils */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }

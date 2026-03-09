@@ -48,6 +48,9 @@ function createWindow() {
       };
 
       autoUpdater.on('update-available', (info) => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('update-available', info.version);
+        }
         new Notification({
           title: 'TaskFlow Update Available',
           body: `Version ${info.version} is available and downloading.`
@@ -55,6 +58,9 @@ function createWindow() {
       });
 
       autoUpdater.on('update-downloaded', (info) => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('update-downloaded');
+        }
         new Notification({
           title: 'Update Ready',
           body: 'Restart TaskFlow to apply the latest updates.'
@@ -63,6 +69,15 @@ function createWindow() {
 
       autoUpdater.on('error', (err) => {
         console.error('AutoUpdater Error:', err);
+      });
+
+      // IPC to trigger download/install
+      ipcMain.on('start-update', () => {
+        autoUpdater.downloadUpdate();
+      });
+
+      ipcMain.on('install-update', () => {
+        autoUpdater.quitAndInstall();
       });
 
       // Initial check after 3 seconds

@@ -21,6 +21,10 @@ export const useAppViewModel = () => {
   });
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
+  // Update management state
+  const [updateStatus, setUpdateStatus] = useState<'none' | 'available' | 'downloading' | 'ready'>('none');
+  const [availableVersion, setAvailableVersion] = useState<string | null>(null);
+
   // Restore internal state for task creation
   const [newTaskText, setNewTaskText] = useState('');
   const [newTaskDate, setNewTaskDate] = useState(new Date().toISOString().split('T')[0]);
@@ -45,10 +49,28 @@ export const useAppViewModel = () => {
             return prev;
           });
         });
+
+        // Update listeners
+        ipcRenderer.on('update-available', (_event: any, version: string) => {
+          setAvailableVersion(version);
+          setUpdateStatus('available');
+        });
+
+        ipcRenderer.on('update-downloaded', () => {
+          setUpdateStatus('ready');
+        });
       }
     };
     initTheme();
-  }, [ipcRenderer]); // Dependency on ipcRenderer for safety
+
+    return () => {
+      if (ipcRenderer) {
+        ipcRenderer.removeAllListeners('system-theme-updated');
+        ipcRenderer.removeAllListeners('update-available');
+        ipcRenderer.removeAllListeners('update-downloaded');
+      }
+    };
+  }, [ipcRenderer, themeMode]);
 
   useEffect(() => {
     localStorage.setItem('themeMode', themeMode);
@@ -172,12 +194,26 @@ export const useAppViewModel = () => {
     setViewDate(d);
   };
 
+  const startUpdate = () => {
+    if (ipcRenderer) {
+      setUpdateStatus('downloading');
+      ipcRenderer.send('start-update');
+    }
+  };
+
+  const installUpdate = () => {
+    if (ipcRenderer) {
+      ipcRenderer.send('install-update');
+    }
+  };
+
   return {
     state: { 
       activeListId, tasks, projectLists, filterDate, viewDate, 
       isSidebarExpanded, filteredTasks, calendarDays,
       newTaskText, newTaskDate,
-      theme, themeMode
+      theme, themeMode,
+      updateStatus, availableVersion
     },
     commands: { 
       setActiveListId, 
@@ -192,7 +228,9 @@ export const useAppViewModel = () => {
       toggleTask, 
       deleteTask,
       changeMonth,
-      setThemeMode
+      setThemeMode,
+      startUpdate,
+      installUpdate
     }
   };
 };
