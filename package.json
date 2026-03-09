@@ -1,7 +1,7 @@
 {
   "name": "taskflow",
   "private": true,
-  "version": "1.6.2",
+  "version": "1.7.0",
   "description": "A high-performance, minimalist to-do list application for Windows.",
   "author": "s4nby <95icarus@gmail.com>",
   "type": "module",
@@ -62,10 +62,8 @@
     ],
     "publish": [
       {
-        "provider": "github",
-        "owner": "s4nby",
-        "repo": "TaskFlow",
-        "releaseType": "release"
+        "provider": "generic",
+        "url": "https://updates.taskflow.app/downloads"
       }
     ]
   },

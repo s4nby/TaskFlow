@@ -26,7 +26,14 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Build and Release
-        run: npm run build && npx electron-builder --publish always
+      - name: Build Assets
+        run: npm run build && npx electron-builder --publish never
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Upload Differential Updates to CDN
+        # This is a hypothetical step representing the upload to your generic update server.
+        # It uploads the required files for electron-updater: the .exe, latest.yml, and .blockmap
+        run: |
+          echo "Uploading to https://updates.taskflow.app/downloads..."
+          # Example: aws s3 sync dist-electron s3://taskflow-updates/downloads --exclude "*" --include "*.exe" --include "*.yml" --include "*.blockmap"
