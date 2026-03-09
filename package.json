@@ -1,7 +1,9 @@
 {
   "name": "taskflow",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.2.1",
+  "description": "A high-performance, minimalist to-do list application for Windows.",
+  "author": "s4nby <95icarus@gmail.com>",
   "type": "module",
   "repository": {
     "type": "git",
@@ -35,12 +37,6 @@
             "x64"
           ]
         },
-        {
-          "target": "msi",
-          "arch": [
-            "x64"
-          ]
-        },
         "portable"
       ],
       "verifyUpdateCodeSignature": false
@@ -54,11 +50,6 @@
       "artifactName": "${productName}-Setup-${version}.${ext}",
       "uninstallDisplayName": "TaskFlow",
       "runAfterFinish": true
-    },
-    "msi": {
-      "oneClick": true,
-      "shortcutName": "TaskFlow",
-      "artifactName": "${productName}-${version}.${ext}"
     },
     "publish": [
       {
