@@ -32,29 +32,44 @@ function createWindow() {
     
     // Defer update check to avoid blocking startup
     if (process.env.NODE_ENV !== 'development') {
-      setTimeout(() => {
-        try {
-          const { autoUpdater } = require('electron-updater');
-          
-          autoUpdater.on('update-available', (info) => {
-            new Notification({
-              title: 'TaskFlow Update Available',
-              body: `Version ${info.version} is available and downloading.`
-            }).show();
-          });
+      const { autoUpdater } = require('electron-updater');
+      
+      // Configure verbose logging for debugging update comparison
+      autoUpdater.logger = require('electron-log');
+      autoUpdater.logger.transports.file.level = 'info';
+      
+      // Explicitly allow version downgrades if needed for testing or recovery
+      autoUpdater.allowDowngrade = false;
 
-          autoUpdater.on('update-downloaded', (info) => {
-            new Notification({
-              title: 'Update Ready',
-              body: 'Restart TaskFlow to apply the latest updates.'
-            }).show();
-          });
+      const checkUpdates = () => {
+        autoUpdater.checkForUpdatesAndNotify().catch(err => {
+          console.error('Manual update check failed:', err);
+        });
+      };
 
-          autoUpdater.checkForUpdatesAndNotify();
-        } catch (err) {
-          console.error('Failed to initialize auto-updater:', err);
-        }
-      }, 3000);
+      autoUpdater.on('update-available', (info) => {
+        new Notification({
+          title: 'TaskFlow Update Available',
+          body: `Version ${info.version} is available and downloading.`
+        }).show();
+      });
+
+      autoUpdater.on('update-downloaded', (info) => {
+        new Notification({
+          title: 'Update Ready',
+          body: 'Restart TaskFlow to apply the latest updates.'
+        }).show();
+      });
+
+      autoUpdater.on('error', (err) => {
+        console.error('AutoUpdater Error:', err);
+      });
+
+      // Initial check after 3 seconds
+      setTimeout(checkUpdates, 3000);
+
+      // Background polling: Check every 4 hours
+      setInterval(checkUpdates, 1000 * 60 * 60 * 4);
     }
   });
 
