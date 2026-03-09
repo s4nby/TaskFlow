@@ -1,7 +1,7 @@
 {
   "name": "taskflow",
   "private": true,
-  "version": "1.7.1",
+  "version": "1.8.0",
   "description": "A high-performance, minimalist to-do list application for Windows.",
   "author": "s4nby <95icarus@gmail.com>",
   "type": "module",
@@ -48,6 +48,8 @@
     },
     "nsis": {
       "oneClick": false,
+      "perMachine": true,
+      "allowElevation": true,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
