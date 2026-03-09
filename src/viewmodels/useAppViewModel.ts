@@ -55,8 +55,17 @@ export const useAppViewModel = () => {
           setUpdateStatus('available');
         });
 
+        ipcRenderer.on('update-not-available', () => {
+          setUpdateStatus('none');
+        });
+
         ipcRenderer.on('update-downloaded', () => {
           setUpdateStatus('ready');
+        });
+
+        ipcRenderer.on('update-error', (_event: any, message: string) => {
+          console.error('Update Error:', message);
+          setUpdateStatus('none');
         });
       }
     };
@@ -66,7 +75,9 @@ export const useAppViewModel = () => {
       if (ipcRenderer) {
         ipcRenderer.removeAllListeners('system-theme-updated');
         ipcRenderer.removeAllListeners('update-available');
+        ipcRenderer.removeAllListeners('update-not-available');
         ipcRenderer.removeAllListeners('update-downloaded');
+        ipcRenderer.removeAllListeners('update-error');
       }
     };
   }, [ipcRenderer, themeMode]);
@@ -218,6 +229,12 @@ export const useAppViewModel = () => {
     }
   };
 
+  const checkForUpdates = () => {
+    if (ipcRenderer) {
+      ipcRenderer.send('check-for-updates');
+    }
+  };
+
   return {
     state: { 
       activeListId, tasks, projectLists, filterDate, viewDate, 
@@ -243,7 +260,8 @@ export const useAppViewModel = () => {
       changeMonth,
       setThemeMode,
       startUpdate,
-      installUpdate
+      installUpdate,
+      checkForUpdates
     }
   };
 };

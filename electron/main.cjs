@@ -51,21 +51,32 @@ function createWindow() {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-available', info.version);
         }
-        // REMOVED: Native Notification Toast
+      });
+
+      autoUpdater.on('update-not-available', () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('update-not-available');
+        }
       });
 
       autoUpdater.on('update-downloaded', (info) => {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-downloaded');
         }
-        // REMOVED: Native Notification Toast
       });
 
       autoUpdater.on('error', (err) => {
         console.error('AutoUpdater Error:', err);
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('update-error', err.message);
+        }
       });
 
       // IPC to trigger download/install
+      ipcMain.on('check-for-updates', () => {
+        checkUpdates();
+      });
+
       ipcMain.on('start-update', () => {
         autoUpdater.downloadUpdate(); // EXPLICIT DOWNLOAD TRIGGER
       });

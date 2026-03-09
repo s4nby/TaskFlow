@@ -1,4 +1,4 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState, Suspense, lazy, useEffect } from 'react';
 import { Minus, Square, X, Menu, ChevronLeft, Sun, Moon, Monitor, ArrowDown } from 'lucide-react';
 import './styles/main.css';
 
@@ -21,6 +21,11 @@ const App: React.FC = () => {
   const { state, commands } = useAppViewModel();
   const [isNamingModalOpen, setIsNamingModalOpen] = useState(false);
   const [selectedCreationDate, setSelectedCreationDate] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    // Check for updates on mount
+    commands.checkForUpdates();
+  }, []);
 
   const activeProject = state.projectLists.find(p => p.id === state.activeListId);
 
