@@ -1,7 +1,7 @@
 {
   "name": "taskflow",
   "private": true,
-  "version": "1.3.1",
+  "version": "1.4.0",
   "description": "A high-performance, minimalist to-do list application for Windows.",
   "author": "s4nby <95icarus@gmail.com>",
   "type": "module",
@@ -27,8 +27,13 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
-      "package.json"
+      "package.json",
+      "!dist/**/*.map",
+      "!dist-electron",
+      "!node_modules/.cache",
+      "!**/*.ts"
     ],
+    "asar": true,
     "win": {
       "target": [
         {
@@ -49,8 +54,13 @@
       "shortcutName": "TaskFlow",
       "artifactName": "${productName}-Setup-${version}.${ext}",
       "uninstallDisplayName": "TaskFlow",
-      "runAfterFinish": true
+      "runAfterFinish": true,
+      "compress": "maximum"
     },
+    "electronLanguages": [
+      "en-US",
+      "en"
+    ],
     "publish": [
       {
         "provider": "github",
