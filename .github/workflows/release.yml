@@ -26,15 +26,22 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Get Package Version
+        id: get_version
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          echo "PACKAGE_VERSION=$version" >> $env:GITHUB_ENV
+
       - name: Build Assets
         run: npm run build && npx electron-builder --publish always
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ env.PACKAGE_VERSION }}
           files: |
             dist-electron/*.exe
             dist-electron/*.yml
