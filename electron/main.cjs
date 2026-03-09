@@ -34,16 +34,16 @@ function createWindow() {
     if (process.env.NODE_ENV !== 'development') {
       const { autoUpdater } = require('electron-updater');
       
-      // Configure verbose logging for debugging update comparison
       autoUpdater.logger = require('electron-log');
       autoUpdater.logger.transports.file.level = 'info';
       
-      // Explicitly allow version downgrades if needed for testing or recovery
+      autoUpdater.autoDownload = false; // DISABLE AUTOMATIC DOWNLOAD
       autoUpdater.allowDowngrade = false;
 
       const checkUpdates = () => {
-        autoUpdater.checkForUpdatesAndNotify().catch(err => {
-          console.error('Manual update check failed:', err);
+        // Only check for metadata, don't download
+        autoUpdater.checkForUpdates().catch(err => {
+          console.error('Update metadata check failed:', err);
         });
       };
 
@@ -51,20 +51,14 @@ function createWindow() {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-available', info.version);
         }
-        new Notification({
-          title: 'TaskFlow Update Available',
-          body: `Version ${info.version} is available and downloading.`
-        }).show();
+        // REMOVED: Native Notification Toast
       });
 
       autoUpdater.on('update-downloaded', (info) => {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-downloaded');
         }
-        new Notification({
-          title: 'Update Ready',
-          body: 'Restart TaskFlow to apply the latest updates.'
-        }).show();
+        // REMOVED: Native Notification Toast
       });
 
       autoUpdater.on('error', (err) => {
@@ -73,18 +67,17 @@ function createWindow() {
 
       // IPC to trigger download/install
       ipcMain.on('start-update', () => {
-        autoUpdater.downloadUpdate();
+        autoUpdater.downloadUpdate(); // EXPLICIT DOWNLOAD TRIGGER
       });
 
       ipcMain.on('install-update', () => {
-        autoUpdater.quitAndInstall();
+        autoUpdater.quitAndInstall(); // EXPLICIT INSTALL TRIGGER
       });
 
-      // Initial check after 3 seconds
+      // Only check once on startup after 3 seconds
       setTimeout(checkUpdates, 3000);
-
-      // Background polling: Check every 4 hours
-      setInterval(checkUpdates, 1000 * 60 * 60 * 4);
+      
+      // REMOVED: Background polling Interval
     }
   });
 
