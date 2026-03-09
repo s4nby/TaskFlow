@@ -86,27 +86,38 @@ const TaskListView: React.FC<TaskListViewProps> = ({
     const relativeY = e.clientY - rect.top;
     
     // If dragging in the middle 50% of the item, consider it a merge target
-    if (relativeY > rect.height * 0.25 && relativeY < rect.height * 0.75) {
-      setMergeTargetId(targetId);
+    if (relativeY > rect.height * 0.2 && relativeY < rect.height * 0.8) {
+      if (mergeTargetId !== targetId) setMergeTargetId(targetId);
     } else {
-      setMergeTargetId(null);
-      // Traditional reorder logic
-      const newTasks = [...tasks];
-      const draggedIdx = newTasks.findIndex(t => t.id === draggedTaskId);
-      const targetIdx = newTasks.findIndex(t => t.id === targetId);
-      
-      const [removed] = newTasks.splice(draggedIdx, 1);
-      newTasks.splice(targetIdx, 0, removed);
-      
-      onReorderTasks(tasks[0].listId, newTasks);
+      if (mergeTargetId !== null) setMergeTargetId(null);
     }
   };
 
   const handleDrop = (e: React.DragEvent, targetId: string) => {
     e.preventDefault();
-    if (draggedTaskId && mergeTargetId === targetId && draggedTaskId !== targetId) {
-      onMergeTasks(draggedTaskId, targetId);
+    if (!draggedTaskId || draggedTaskId === targetId) {
+      setMergeTargetId(null);
+      setDraggedTaskId(null);
+      return;
     }
+
+    if (mergeTargetId === targetId) {
+      onMergeTasks(draggedTaskId, targetId);
+    } else {
+      // Reorder logic on drop
+      const newTasks = [...tasks];
+      const draggedIdx = newTasks.findIndex(t => t.id === draggedTaskId);
+      const targetIdx = newTasks.findIndex(t => t.id === targetId);
+      
+      if (draggedIdx !== -1 && targetIdx !== -1) {
+        const [removed] = newTasks.splice(draggedIdx, 1);
+        newTasks.splice(targetIdx, 0, removed);
+        
+        // We pass the new order to the viewmodel
+        onReorderTasks(tasks[0].listId, newTasks);
+      }
+    }
+    
     setMergeTargetId(null);
     setDraggedTaskId(null);
   };

@@ -298,11 +298,13 @@ export const useAppViewModel = () => {
   };
 
   const mergeTasks = (sourceId: string, targetId: string) => {
+    if (sourceId === targetId) return;
+    
     setTasks(prev => {
       const sourceTask = prev.find(t => t.id === sourceId);
       const targetTask = prev.find(t => t.id === targetId);
       
-      if (!sourceTask || !targetTask || sourceId === targetId) return prev;
+      if (!sourceTask || !targetTask) return prev;
 
       const priorityWeight = { high: 3, medium: 2, low: 1 };
       const mergedPriority: Priority = priorityWeight[sourceTask.priority] > priorityWeight[targetTask.priority] 
@@ -316,17 +318,24 @@ export const useAppViewModel = () => {
         subTasks: [...(targetTask.subTasks || []), ...(sourceTask.subTasks || [])]
       };
 
+      // Filter out source, replace target with merged
       return prev
         .filter(t => t.id !== sourceId)
         .map(t => t.id === targetId ? mergedTask : t);
     });
   };
 
-  const reorderTasks = (listId: string, newOrder: Task[]) => {
+  const reorderTasks = (_listId: string, newOrder: Task[]) => {
     setTasks(prev => {
-      const otherTasks = prev.filter(t => t.listId !== listId);
-      const updatedOrder = newOrder.map((t, i) => ({ ...t, index: i }));
-      return [...otherTasks, ...updatedOrder];
+      // Create a map of new indices from the newOrder
+      const indexMap = new Map(newOrder.map((t, i) => [t.id, i]));
+      
+      return prev.map(t => {
+        if (indexMap.has(t.id)) {
+          return { ...t, index: indexMap.get(t.id)! };
+        }
+        return t;
+      });
     });
   };
 
