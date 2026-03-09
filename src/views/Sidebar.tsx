@@ -37,7 +37,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     setEditingId(null);
   };
 
-  const preferredProjects = projectLists.filter(p => p.isPreferred);
+  // Filter out starred projects from the general sidebar list
+  const generalProjects = projectLists.filter(p => !p.isPreferred);
 
   return (
     <aside className={`sidebar ${isExpanded ? 'expanded' : 'collapsed'}`}>
@@ -64,33 +65,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           {isExpanded && <span className="list-name">All Important</span>}
         </div>
 
-        {preferredProjects.map(project => (
-          <div key={`pref-${project.id}`} className={`list-item ${activeListId === project.id ? 'active' : ''}`} onClick={() => onNavigate(project.id)}>
-            <div className="list-icon"><FolderKanban size={18} /></div>
-            {isExpanded && <span className="list-name">{project.name}</span>}
-          </div>
-        ))}
-
         <div className="sidebar-section-header">
           {isExpanded ? 'PROJECTS' : <div className="divider" />}
         </div>
 
-        {projectLists.map(project => (
+        {generalProjects.map(project => (
           <div key={project.id} className={`list-item ${activeListId === project.id ? 'active' : ''}`} onClick={() => onNavigate(project.id)}>
-            {isExpanded && !editingId && (
-              <button 
-                className={`entity-delete-trigger ${project.isPreferred ? 'preferred' : ''}`}
-                style={{ marginRight: '4px', opacity: project.isPreferred ? 1 : 0.4 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onTogglePreference(project.id);
-                }}
-                title={project.isPreferred ? "Remove from Favorites" : "Add to Favorites"}
-              >
-                <Star size={12} fill={project.isPreferred ? "currentColor" : "none"} />
-              </button>
-            )}
-            
             <div className="list-icon"><FolderKanban size={18} /></div>
             
             {isExpanded && (

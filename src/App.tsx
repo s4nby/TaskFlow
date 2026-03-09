@@ -133,6 +133,7 @@ const App: React.FC = () => {
                   onClearFilter={() => commands.setFilterDate(null)}
                   hideQuickAdd={state.activeListId === 'important'}
                   isPreferred={activeProject?.isPreferred}
+                  isProject={!!activeProject}
                   onTogglePreference={activeProject ? () => commands.toggleProjectPreference(activeProject.id) : undefined}
                   onSetPriority={commands.setTaskPriority}
                   onAddSubTask={commands.addSubTask}
