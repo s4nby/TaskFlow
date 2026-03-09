@@ -18,7 +18,6 @@ interface TaskListViewProps {
   onClearFilter: () => void;
   hideQuickAdd?: boolean;
   isPreferred?: boolean;
-  isProject?: boolean;
   onTogglePreference?: () => void;
   onSetPriority: (id: string, priority: Priority) => void;
   onAddSubTask: (taskId: string, text: string) => void;
@@ -29,7 +28,7 @@ interface TaskListViewProps {
 const TaskListView: React.FC<TaskListViewProps> = ({ 
   title, tasks, filterDate, newTaskText, 
   onSetNewTaskText, onAddTask, onToggleTask, onDeleteTask, onUpdateTask, onClearFilter,
-  hideQuickAdd = false, isPreferred = false, isProject = false, onTogglePreference,
+  hideQuickAdd = false, isPreferred = false, onTogglePreference,
   onSetPriority, onAddSubTask, onToggleSubTask, onReorderTasks
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);

@@ -11,12 +11,11 @@ interface SidebarProps {
   projectLists: ProjectList[];
   onNavigate: (id: ViewState) => void;
   onDeleteProject: (id: string) => void;
-  onTogglePreference: (id: string) => void;
   onRenameProject: (id: string, name: string) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
-  isExpanded, activeListId, projectLists, onNavigate, onDeleteProject, onTogglePreference, onRenameProject
+  isExpanded, activeListId, projectLists, onNavigate, onDeleteProject, onRenameProject
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingText] = useState('');
