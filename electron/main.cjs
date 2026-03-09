@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 let mainWindow;
+let tray;
 
 function createWindow() {
   // Remove default menu
@@ -53,10 +54,29 @@ function createWindow() {
       ]);
       tray.setToolTip('TaskFlow Productivity');
       tray.setContextMenu(contextMenu);
-      tray.on('click', () => mainWindow.show());
+      tray.on('click', () => {
+        if (mainWindow.isVisible()) {
+          if (mainWindow.isMinimized()) {
+            mainWindow.restore();
+            mainWindow.focus();
+          } else {
+            mainWindow.hide();
+          }
+        } else {
+          mainWindow.show();
+          mainWindow.restore();
+          mainWindow.focus();
+        }
+      });
     } catch (err) {
       console.error('Failed to create tray:', err);
     }
+
+    // Hide to Tray on Minimize
+    mainWindow.on('minimize', (event) => {
+      event.preventDefault();
+      mainWindow.hide();
+    });
 
     // Defer update check to avoid blocking startup
     if (process.env.NODE_ENV !== 'development') {

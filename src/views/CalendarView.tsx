@@ -54,8 +54,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               return (
                 <div 
                   key={idx} 
-                  className={`day-cell ${hasProjects ? 'interactive' : 'disabled'} ${!dayData.isCurrentMonth ? 'ghost' : ''} ${dayData.dateStr === new Date().toISOString().split('T')[0] ? 'today' : ''}`} 
-                  onClick={() => handleCellClick(dayData)}
+                  className={`day-cell ${hasProjects ? 'interactive' : 'empty-cell'} ${!dayData.isCurrentMonth ? 'ghost' : ''} ${dayData.dateStr === new Date().toISOString().split('T')[0] ? 'today' : ''}`} 
+                  onClick={hasProjects ? () => handleCellClick(dayData) : undefined}
                 >
                   <div className="day-cell-header">
                     <span className="day-number">{dayData.day}</span>
@@ -63,11 +63,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                       className="day-add-project-btn"
                       onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
                         onInitializeProject(dayData.dateStr);
                       }}
+                      onMouseDown={(e) => e.stopPropagation()}
                       title="Initialize Project on this date"
                     >
-                      <Plus size={12} />
+                      <Plus size={14} />
                     </button>
                   </div>
                   <div className="day-entities">

@@ -28,6 +28,7 @@ export const useAppViewModel = () => {
 
   // Restore internal state for task creation
   const [newTaskText, setNewTaskText] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   
   // Access Electron IPC
   // @ts-ignore
@@ -133,6 +134,16 @@ export const useAppViewModel = () => {
     return [...projectLists].sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
   }, [projectLists]);
 
+  const searchResults = useMemo(() => {
+    if (!searchTerm.trim()) return { projects: [], tasks: [] };
+    const query = searchTerm.toLowerCase();
+    
+    return {
+      projects: projectLists.filter(p => p.name.toLowerCase().includes(query)),
+      tasks: tasks.filter(t => t.text.toLowerCase().includes(query))
+    };
+  }, [searchTerm, tasks, projectLists]);
+
   const calendarDays = useMemo(() => {
     if (activeListId !== 'calendar') return []; // Don't compute if not in calendar view
 
@@ -187,7 +198,7 @@ export const useAppViewModel = () => {
     return days.slice(0, 35);
   }, [viewDate, tasks, projectLists, activeListId]);
 
-  const addTask = async (text?: string, dueDate?: string, priority: Priority = 'medium') => {
+  const addTask = async (text?: string, dueDate?: string, priority: Priority = 'low') => {
     const taskText = text || newTaskText;
     if (!taskText.trim()) return;
 
@@ -274,6 +285,43 @@ export const useAppViewModel = () => {
     }));
   };
 
+  const updateSubTask = (taskId: string, subTaskId: string, text: string) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        return {
+          ...t,
+          subTasks: t.subTasks.map(s => s.id === subTaskId ? { ...s, text: text.trim() } : s)
+        };
+      }
+      return t;
+    }));
+  };
+
+  const mergeTasks = (sourceId: string, targetId: string) => {
+    setTasks(prev => {
+      const sourceTask = prev.find(t => t.id === sourceId);
+      const targetTask = prev.find(t => t.id === targetId);
+      
+      if (!sourceTask || !targetTask || sourceId === targetId) return prev;
+
+      const priorityWeight = { high: 3, medium: 2, low: 1 };
+      const mergedPriority: Priority = priorityWeight[sourceTask.priority] > priorityWeight[targetTask.priority] 
+        ? sourceTask.priority 
+        : targetTask.priority;
+
+      const mergedTask: Task = {
+        ...targetTask,
+        text: `${targetTask.text} & ${sourceTask.text}`,
+        priority: mergedPriority,
+        subTasks: [...(targetTask.subTasks || []), ...(sourceTask.subTasks || [])]
+      };
+
+      return prev
+        .filter(t => t.id !== sourceId)
+        .map(t => t.id === targetId ? mergedTask : t);
+    });
+  };
+
   const reorderTasks = (listId: string, newOrder: Task[]) => {
     setTasks(prev => {
       const otherTasks = prev.filter(t => t.listId !== listId);
@@ -325,7 +373,6 @@ export const useAppViewModel = () => {
         const { version: currentVersion } = await import('../../package.json');
         
         if (latestVersion !== currentVersion && updateStatus === 'none') {
-          console.log(`Manual Update Check: New version found ${latestVersion} (Current: ${currentVersion})`);
           setAvailableVersion(latestVersion);
           setUpdateStatus('available');
         }
@@ -339,7 +386,7 @@ export const useAppViewModel = () => {
     state: { 
       activeListId, tasks, projectLists: sortedProjectLists, filterDate, viewDate, 
       isSidebarExpanded, filteredTasks, calendarDays,
-      newTaskText,
+      newTaskText, searchTerm, searchResults,
       theme, themeMode,
       updateStatus, availableVersion, downloadProgress
     },
@@ -349,6 +396,7 @@ export const useAppViewModel = () => {
       setViewDate, 
       setIsSidebarExpanded, 
       setNewTaskText,
+      setSearchTerm,
       addTask, 
       createProject, 
       deleteProject, 
@@ -360,6 +408,7 @@ export const useAppViewModel = () => {
       setTaskPriority,
       addSubTask,
       toggleSubTask,
+      mergeTasks,
       reorderTasks,
       reorderProjects,
       changeMonth,

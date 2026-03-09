@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { 
   Check, Clock, Trash2, FilterX, Pencil, X, Star, 
-  ChevronDown, ChevronRight, GripVertical, Plus
+  ChevronDown, ChevronRight, GripVertical, Plus, ChevronUp
 } from 'lucide-react';
-import type { Task, Priority } from '../models/types';
+import type { Task, Priority, SubTask } from '../models/types';
+import AutoExpandingTextarea from '../components/AutoExpandingTextarea';
 
 interface TaskListViewProps {
   title: string;
@@ -22,6 +23,8 @@ interface TaskListViewProps {
   onSetPriority: (id: string, priority: Priority) => void;
   onAddSubTask: (taskId: string, text: string) => void;
   onToggleSubTask: (taskId: string, subTaskId: string) => void;
+  onUpdateSubTask: (taskId: string, subTaskId: string, text: string) => void;
+  onMergeTasks: (sourceId: string, targetId: string) => void;
   onReorderTasks: (listId: string, newOrder: Task[]) => void;
 }
 
@@ -29,13 +32,16 @@ const TaskListView: React.FC<TaskListViewProps> = ({
   title, tasks, filterDate, newTaskText, 
   onSetNewTaskText, onAddTask, onToggleTask, onDeleteTask, onUpdateTask, onClearFilter,
   hideQuickAdd = false, isPreferred = false, onTogglePreference,
-  onSetPriority, onAddSubTask, onToggleSubTask, onReorderTasks
+  onSetPriority, onAddSubTask, onToggleSubTask, onUpdateSubTask, onMergeTasks, onReorderTasks
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [editingSubTaskId, setEditingSubTaskId] = useState<string | null>(null);
+  const [editingSubTaskText, setEditingSubTaskText] = useState('');
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
   const [newSubTaskText, setNewSubTaskText] = useState<{ [key: string]: string }>({});
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [mergeTargetId, setMergeTargetId] = useState<string | null>(null);
   const [isAddingTask, setIsAddingTask] = useState(false);
 
   const startEditing = (task: Task) => {
@@ -50,6 +56,18 @@ const TaskListView: React.FC<TaskListViewProps> = ({
     }
   };
 
+  const startEditingSubTask = (sub: SubTask) => {
+    setEditingSubTaskId(sub.id);
+    setEditingSubTaskText(sub.text);
+  };
+
+  const saveSubTaskEditing = (taskId: string) => {
+    if (editingSubTaskId && editingSubTaskText.trim()) {
+      onUpdateSubTask(taskId, editingSubTaskId, editingSubTaskText);
+      setEditingSubTaskId(null);
+    }
+  };
+
   const toggleExpand = (taskId: string) => {
     const next = new Set(expandedTasks);
     if (next.has(taskId)) next.delete(taskId);
@@ -58,18 +76,43 @@ const TaskListView: React.FC<TaskListViewProps> = ({
   };
 
   const handleDragStart = (id: string) => setDraggedTaskId(id);
+  
   const handleDragOver = (e: React.DragEvent, targetId: string) => {
     e.preventDefault();
     if (!draggedTaskId || draggedTaskId === targetId) return;
+
+    // Determine if we should show merge or reorder based on drag position
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const relativeY = e.clientY - rect.top;
     
-    const newTasks = [...tasks];
-    const draggedIdx = newTasks.findIndex(t => t.id === draggedTaskId);
-    const targetIdx = newTasks.findIndex(t => t.id === targetId);
-    
-    const [removed] = newTasks.splice(draggedIdx, 1);
-    newTasks.splice(targetIdx, 0, removed);
-    
-    onReorderTasks(tasks[0].listId, newTasks);
+    // If dragging in the middle 50% of the item, consider it a merge target
+    if (relativeY > rect.height * 0.25 && relativeY < rect.height * 0.75) {
+      setMergeTargetId(targetId);
+    } else {
+      setMergeTargetId(null);
+      // Traditional reorder logic
+      const newTasks = [...tasks];
+      const draggedIdx = newTasks.findIndex(t => t.id === draggedTaskId);
+      const targetIdx = newTasks.findIndex(t => t.id === targetId);
+      
+      const [removed] = newTasks.splice(draggedIdx, 1);
+      newTasks.splice(targetIdx, 0, removed);
+      
+      onReorderTasks(tasks[0].listId, newTasks);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (draggedTaskId && mergeTargetId === targetId && draggedTaskId !== targetId) {
+      onMergeTasks(draggedTaskId, targetId);
+    }
+    setMergeTargetId(null);
+    setDraggedTaskId(null);
+  };
+
+  const handleDragLeave = () => {
+    setMergeTargetId(null);
   };
 
   const getPriorityColor = (p: Priority) => {
@@ -120,23 +163,33 @@ const TaskListView: React.FC<TaskListViewProps> = ({
             draggable
             onDragStart={() => handleDragStart(task.id)}
             onDragOver={(e) => handleDragOver(e, task.id)}
+            onDrop={(e) => handleDrop(e, task.id)}
+            onDragLeave={handleDragLeave}
           >
-            <div className="task-item themed-border" style={{ borderLeft: `4px solid ${getPriorityColor(task.priority)}` }}>
-              <div className="task-drag-handle"><GripVertical size={14} /></div>
+            <div className={`task-item themed-border ${mergeTargetId === task.id ? 'merge-target' : ''}`} style={{ borderLeft: `4px solid ${getPriorityColor(task.priority)}`, position: 'relative' }}>
+              <div className="task-left-controls">
+                <div className="task-drag-handle"><GripVertical size={14} /></div>
+                <button className="chevron-trigger" onClick={() => toggleExpand(task.id)} title="Sub-tasks">
+                  {expandedTasks.has(task.id) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                </button>
+              </div>
+              
               <div className={`task-checkbox ${task.completed ? 'completed' : ''}`} onClick={() => onToggleTask(task.id)}>
                 {task.completed && <Check size={12} color="white" />}
               </div>
               <div className="task-content" style={{ display: 'flex', flex: 1, alignItems: 'center', gap: '8px' }}>
                 {editingId === task.id ? (
-                  <input 
-                    type="text" 
+                  <AutoExpandingTextarea 
                     className="quick-add-input" 
                     style={{ padding: '4px 8px', fontSize: '0.9rem' }}
                     value={editingText} 
                     onChange={(e) => setEditingText(e.target.value)}
                     onBlur={saveEditing}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') saveEditing();
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        saveEditing();
+                      }
                       if (e.key === 'Escape') setEditingId(null);
                     }}
                     autoFocus
@@ -149,18 +202,17 @@ const TaskListView: React.FC<TaskListViewProps> = ({
                 )}
               </div>
               <div className="task-actions" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                <select 
-                  className="priority-select" 
-                  value={task.priority} 
-                  onChange={(e) => onSetPriority(task.id, e.target.value as Priority)}
+                <div 
+                  className={`priority-indicator ${task.priority}`} 
+                  onClick={() => {
+                    const next: Priority = task.priority === 'low' ? 'medium' : task.priority === 'medium' ? 'high' : 'low';
+                    onSetPriority(task.id, next);
+                  }}
+                  title={`Priority: ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`}
                 >
-                  <option value="low">Low</option>
-                  <option value="medium">Med</option>
-                  <option value="high">High</option>
-                </select>
-                <button className="entity-delete-trigger" onClick={() => toggleExpand(task.id)} title="Sub-tasks">
-                  {expandedTasks.has(task.id) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                </button>
+                  {(task.priority === 'medium' || task.priority === 'low') && <ChevronUp size={10} />}
+                  {(task.priority === 'medium' || task.priority === 'high') && <ChevronDown size={10} />}
+                </div>
                 {editingId === task.id ? (
                   <button className="entity-delete-trigger" onClick={() => setEditingId(null)} title="Cancel"><X size={14} /></button>
                 ) : (
@@ -177,7 +229,26 @@ const TaskListView: React.FC<TaskListViewProps> = ({
                     <div className={`task-checkbox mini ${sub.completed ? 'completed' : ''}`} onClick={() => onToggleSubTask(task.id, sub.id)}>
                       {sub.completed && <Check size={8} color="white" />}
                     </div>
-                    <span className={`subtask-text ${sub.completed ? 'completed' : ''}`}>{sub.text}</span>
+                    {editingSubTaskId === sub.id ? (
+                      <input 
+                        className="subtask-input"
+                        value={editingSubTaskText}
+                        onChange={(e) => setEditingSubTaskText(e.target.value)}
+                        onBlur={() => saveSubTaskEditing(task.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveSubTaskEditing(task.id);
+                          if (e.key === 'Escape') setEditingSubTaskId(null);
+                        }}
+                        autoFocus
+                      />
+                    ) : (
+                      <>
+                        <span className={`subtask-text ${sub.completed ? 'completed' : ''}`}>{sub.text}</span>
+                        <button className="subtask-edit-btn" onClick={() => startEditingSubTask(sub)}>
+                          <Pencil size={10} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 ))}
                 <div className="subtask-add">
@@ -214,14 +285,20 @@ const TaskListView: React.FC<TaskListViewProps> = ({
           ) : (
             <form className="quick-add-container inline-quick-add" onSubmit={handleAddTask}>
               <div className="input-group themed-input-container">
-                <input 
-                  type="text" 
+                <AutoExpandingTextarea 
                   className="quick-add-input" 
                   placeholder="What needs to be done?" 
                   value={newTaskText} 
                   onChange={(e) => onSetNewTaskText(e.target.value)}
                   onBlur={() => {
                     if (!newTaskText.trim()) setIsAddingTask(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleAddTask(e as any);
+                    }
+                    if (e.key === 'Escape') setIsAddingTask(false);
                   }}
                   autoFocus
                 />

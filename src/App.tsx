@@ -1,5 +1,5 @@
-import React, { useState, Suspense, lazy, useEffect } from 'react';
-import { Minus, Square, X, Menu, ChevronLeft, Sun, Moon, Monitor, ArrowDown } from 'lucide-react';
+import React, { useState, Suspense, lazy, useEffect, useRef } from 'react';
+import { Minus, Square, X, Menu, ChevronLeft, Sun, Moon, Monitor, ArrowDown, Calendar as CalendarIcon, Search } from 'lucide-react';
 import './styles/main.css';
 
 // MVVM Layers
@@ -22,6 +22,30 @@ const App: React.FC = () => {
   const { state, commands } = useAppViewModel();
   const [isNamingModalOpen, setIsNamingModalOpen] = useState(false);
   const [selectedCreationDate, setSelectedCreationDate] = useState<string | undefined>(undefined);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+      if (e.key === 'Escape') {
+        setIsSearchOpen(false);
+        commands.setSearchTerm('');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [commands]);
+
+  useEffect(() => {
+    if (isSearchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchOpen]);
 
   useEffect(() => {
     // Check for updates on mount
@@ -136,6 +160,8 @@ const App: React.FC = () => {
                   onSetPriority={commands.setTaskPriority}
                   onAddSubTask={commands.addSubTask}
                   onToggleSubTask={commands.toggleSubTask}
+                  onUpdateSubTask={commands.updateSubTask}
+                  onMergeTasks={commands.mergeTasks}
                   onReorderTasks={commands.reorderTasks}
                 />
               );
@@ -147,6 +173,67 @@ const App: React.FC = () => {
 
   return (
     <div id="app-wrapper" className={state.theme === 'light' ? 'light-theme' : ''}>
+      {/* SEARCH OVERLAY */}
+      {isSearchOpen && (
+        <div className="search-overlay" onClick={() => {
+          setIsSearchOpen(false);
+          commands.setSearchTerm('');
+        }}>
+          <div className="search-modal glass-effect" onClick={e => e.stopPropagation()}>
+            <div className="search-input-wrapper">
+              <Search size={20} className="search-icon" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                className="search-input"
+                placeholder="Search tasks and projects... (Esc to close)"
+                value={state.searchTerm}
+                onChange={(e) => commands.setSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            {state.searchTerm.trim() && (
+              <div className="search-results-container">
+                {state.searchResults.projects.length > 0 && (
+                  <div className="search-result-group">
+                    <div className="search-result-header">PROJECTS</div>
+                    {state.searchResults.projects.map(p => (
+                      <div key={p.id} className="search-result-item" onClick={() => {
+                        commands.setActiveListId(p.id);
+                        setIsSearchOpen(false);
+                        commands.setSearchTerm('');
+                      }}>
+                        <span className="result-name">{p.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {state.searchResults.tasks.length > 0 && (
+                  <div className="search-result-group">
+                    <div className="search-result-header">TASKS</div>
+                    {state.searchResults.tasks.map(t => (
+                      <div key={t.id} className="search-result-item" onClick={() => {
+                        commands.setActiveListId(t.listId || 'todo');
+                        setIsSearchOpen(false);
+                        commands.setSearchTerm('');
+                      }}>
+                        <span className="result-name">{t.text}</span>
+                        <span className="result-meta">{state.projectLists.find(p => p.id === t.listId)?.name || 'Quick ToDoList'}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {state.searchResults.projects.length === 0 && state.searchResults.tasks.length === 0 && (
+                  <div className="search-no-results">No matches found for "{state.searchTerm}"</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* SEAMLESS UNIFIED HEADER */}
       <div className="unified-header">
         {/* LEFT: SIDEBAR CONTROLS */}
@@ -157,6 +244,23 @@ const App: React.FC = () => {
             title={state.isSidebarExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
           >
             {state.isSidebarExpanded ? <ChevronLeft size={20} /> : <Menu size={20} />}
+          </button>
+          <button 
+            className={`header-icon-btn ${state.activeListId === 'calendar' ? 'active' : ''}`} 
+            onClick={() => {
+              commands.setActiveListId('calendar');
+              commands.setFilterDate(null);
+            }}
+            title="Calendar"
+          >
+            <CalendarIcon size={18} />
+          </button>
+          <button 
+            className={`header-icon-btn ${isSearchOpen ? 'active' : ''}`} 
+            onClick={() => setIsSearchOpen(true)}
+            title="Search (Ctrl+F)"
+          >
+            <Search size={18} />
           </button>
         </div>
 

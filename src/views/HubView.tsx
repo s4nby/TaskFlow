@@ -47,7 +47,7 @@ const HubView: React.FC<HubViewProps> = ({
         </p>
       </div>
 
-      <div className="hub-section" style={{ marginTop: '32px' }}>
+      <div className={`hub-section ${projectLists.length === 0 ? 'empty-state' : ''}`} style={{ marginTop: '32px' }}>
         <div className="sidebar-section-header" style={{ paddingLeft: 0, marginBottom: '12px' }}>
           PROJECTS <div className="divider" />
         </div>

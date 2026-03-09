@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Layout, List, 
-  Calendar as CalendarIcon, Star, FolderKanban, Trash2, Pencil
+  Star, FolderKanban, Trash2, Pencil
 } from 'lucide-react';
 import type { ProjectList, ViewState } from '../models/types';
 
@@ -45,11 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
         <div className={`list-item ${activeListId === 'todo' ? 'active' : ''}`} onClick={() => onNavigate('todo')}>
           <div className="list-icon"><List size={18} /></div>
-          {isExpanded && <span className="list-name">To Do List</span>}
-        </div>
-        <div className={`list-item ${activeListId === 'calendar' ? 'active' : ''}`} onClick={() => onNavigate('calendar')}>
-          <div className="list-icon"><CalendarIcon size={18} /></div>
-          {isExpanded && <span className="list-name">Calendar</span>}
+          {isExpanded && <span className="list-name">Quick ToDoList</span>}
         </div>
         
         <div className="sidebar-section-header">
