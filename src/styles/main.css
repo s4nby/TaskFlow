@@ -262,8 +262,13 @@ body {
 }
 
 .sidebar-delete-btn {
+  margin-left: auto;
   margin-right: -4px;
-  margin-left: -4px;
+}
+
+.task-edit-trigger:hover {
+  color: #FFA500 !important;
+  background: rgba(255, 165, 0, 0.1) !important;
 }
 
 .list-item:hover .entity-delete-trigger {

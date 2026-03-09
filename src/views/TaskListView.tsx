@@ -88,7 +88,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({
               {editingId === task.id ? (
                 <button className="entity-delete-trigger" onClick={cancelEditing} title="Cancel"><X size={14} /></button>
               ) : (
-                <button className="entity-delete-trigger" onClick={() => startEditing(task)} title="Edit Task"><Pencil size={14} /></button>
+                <button className="entity-delete-trigger task-edit-trigger" onClick={() => startEditing(task)} title="Edit Task"><Pencil size={14} /></button>
               )}
               <button className="entity-delete-trigger" onClick={() => onDeleteTask(task.id)} title="Delete Task"><Trash2 size={14} /></button>
             </div>
