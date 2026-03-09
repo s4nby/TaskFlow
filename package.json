@@ -1,7 +1,7 @@
 {
   "name": "taskflow",
   "private": true,
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "A high-performance, minimalist to-do list application for Windows.",
   "author": "s4nby <95icarus@gmail.com>",
   "type": "module",
@@ -49,10 +49,7 @@
       "shortcutName": "TaskFlow",
       "artifactName": "${productName}-Setup-${version}.${ext}",
       "uninstallDisplayName": "TaskFlow",
-      "runAfterFinish": true,
-      "installerHeader": "public/vite.svg",
-      "installerIcon": "public/vite.svg",
-      "uninstallerIcon": "public/vite.svg"
+      "runAfterFinish": true
     },
     "publish": [
       {
