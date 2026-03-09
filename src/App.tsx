@@ -13,9 +13,11 @@ const CalendarView = lazy(() => import('./views/CalendarView'));
 const TaskListView = lazy(() => import('./views/TaskListView'));
 const ProjectNamingModal = lazy(() => import('./components/ProjectNamingModal'));
 
-// Access Electron IPC
+// Access Electron modules safely
 // @ts-ignore
-const { ipcRenderer } = window.require('electron');
+const electron = window.require ? window.require('electron') : null;
+const ipcRenderer = electron ? electron.ipcRenderer : null;
+const shell = electron ? electron.shell : null;
 
 const App: React.FC = () => {
   const { state, commands } = useAppViewModel();
@@ -178,8 +180,7 @@ const App: React.FC = () => {
                     // Fallback: If it stays in 'available' for too long after click, 
                     // it might be because the provider is failing. Offer manual download.
                     setTimeout(() => {
-                      if (state.updateStatus === 'available') {
-                        const { shell } = window.require('electron');
+                      if (state.updateStatus === 'available' && shell) {
                         shell.openExternal('https://github.com/s4nby/TaskFlow/releases/latest');
                       }
                     }, 5000);
