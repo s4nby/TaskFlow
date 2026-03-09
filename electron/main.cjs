@@ -65,6 +65,13 @@ function createWindow() {
       autoUpdater.logger = require('electron-log');
       autoUpdater.logger.transports.file.level = 'info';
       
+      // Explicitly set feed URL to override any baked-in generic providers from old builds
+      autoUpdater.setFeedURL({
+        provider: 'github',
+        owner: 's4nby',
+        repo: 'TaskFlow'
+      });
+      
       autoUpdater.autoDownload = false; // Keep false to control download trigger
       autoUpdater.allowDowngrade = false;
 

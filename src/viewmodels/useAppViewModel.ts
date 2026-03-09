@@ -293,9 +293,32 @@ export const useAppViewModel = () => {
     }
   };
 
-  const checkForUpdates = () => {
+  const checkForUpdates = async () => {
+    // 1. Native Check (Main Process)
     if (ipcRenderer) {
       ipcRenderer.send('check-for-updates');
+    }
+
+    // 2. Fallback Manual Check (GitHub API)
+    // This ensures that even if legacy versions are pointing to the wrong update server,
+    // the UI will still detect the version mismatch and show the indicator.
+    try {
+      const response = await fetch('https://api.github.com/repos/s4nby/TaskFlow/releases/latest');
+      if (response.ok) {
+        const release = await response.json();
+        const latestVersion = release.tag_name.replace('v', '');
+        
+        // Import packageJson dynamically to get local version
+        const { version: currentVersion } = await import('../../package.json');
+        
+        if (latestVersion !== currentVersion && updateStatus === 'none') {
+          console.log(`Manual Update Check: New version found ${latestVersion} (Current: ${currentVersion})`);
+          setAvailableVersion(latestVersion);
+          setUpdateStatus('available');
+        }
+      }
+    } catch (err) {
+      console.error('Manual Update Check Failed:', err);
     }
   };
 

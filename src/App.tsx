@@ -170,8 +170,22 @@ const App: React.FC = () => {
             {state.updateStatus !== 'none' && (
               <button 
                 className={`glyph-btn update-indicator ${state.updateStatus}`} 
-                onClick={() => state.updateStatus === 'ready' ? commands.installUpdate() : commands.startUpdate()}
-                title={state.updateStatus === 'ready' ? 'Restart to Update' : state.updateStatus === 'downloading' ? 'Downloading...' : `Update Available (${state.availableVersion})`}
+                onClick={() => {
+                  if (state.updateStatus === 'ready') {
+                    commands.installUpdate();
+                  } else if (ipcRenderer) {
+                    commands.startUpdate();
+                    // Fallback: If it stays in 'available' for too long after click, 
+                    // it might be because the provider is failing. Offer manual download.
+                    setTimeout(() => {
+                      if (state.updateStatus === 'available') {
+                        const { shell } = window.require('electron');
+                        shell.openExternal('https://github.com/s4nby/TaskFlow/releases/latest');
+                      }
+                    }, 5000);
+                  }
+                }}
+                title={state.updateStatus === 'ready' ? 'Restart to Update' : state.updateStatus === 'downloading' ? 'Downloading...' : `Update Available (${state.availableVersion}) - Click to Update`}
               >
                 <ArrowDown size={16} className={state.updateStatus === 'downloading' ? 'anim-bounce' : ''} />
               </button>
