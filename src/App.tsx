@@ -5,6 +5,7 @@ import './styles/main.css';
 // MVVM Layers
 import { useAppViewModel } from './viewmodels/useAppViewModel';
 import Sidebar from './views/Sidebar';
+import packageJson from '../package.json';
 
 // Lazy loaded components
 const HubView = lazy(() => import('./views/HubView'));
@@ -71,15 +72,14 @@ const App: React.FC = () => {
                   tasks={state.filteredTasks}
                   filterDate={state.filterDate}
                   newTaskText={state.newTaskText}
-                  newTaskDate={state.newTaskDate}
                   onSetNewTaskText={commands.setNewTaskText}
-                  onSetNewTaskDate={commands.setNewTaskDate}
                   onAddTask={(e) => {
                     e.preventDefault();
                     commands.addTask();
                   }}
                   onToggleTask={(id) => commands.toggleTask(id)}
                   onDeleteTask={(id) => commands.deleteTask(id)}
+                  onUpdateTask={(id, text) => commands.updateTask(id, text)}
                   onClearFilter={() => commands.setFilterDate(null)}
                 />
               );
@@ -161,6 +161,8 @@ const App: React.FC = () => {
           {renderActiveView()}
         </main>
       </div>
+
+      <div className="app-version-label">v{packageJson.version}</div>
 
       <Suspense fallback={null}>
         <ProjectNamingModal 

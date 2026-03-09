@@ -42,22 +42,20 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {projectLists.map(project => (
           <div key={project.id} className={`list-item ${activeListId === project.id ? 'active' : ''}`} onClick={() => onNavigate(project.id)}>
-            <div className="list-icon"><FolderKanban size={18} /></div>
             {isExpanded && (
-              <>
-                <span className="list-name">{project.name}</span>
-                <button 
-                  className="entity-delete-trigger" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteProject(project.id);
-                  }}
-                  title="Delete Project"
-                >
-                  <Trash2 size={12} />
-                </button>
-              </>
+              <button 
+                className="entity-delete-trigger sidebar-delete-btn" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteProject(project.id);
+                }}
+                title="Delete Project"
+              >
+                <Trash2 size={12} />
+              </button>
             )}
+            <div className="list-icon"><FolderKanban size={18} /></div>
+            {isExpanded && <span className="list-name">{project.name}</span>}
           </div>
         ))}
       </div>

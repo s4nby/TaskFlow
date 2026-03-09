@@ -27,7 +27,6 @@ export const useAppViewModel = () => {
 
   // Restore internal state for task creation
   const [newTaskText, setNewTaskText] = useState('');
-  const [newTaskDate, setNewTaskDate] = useState(new Date().toISOString().split('T')[0]);
   
   // Access Electron IPC
   // @ts-ignore
@@ -151,7 +150,7 @@ export const useAppViewModel = () => {
     const taskText = text || newTaskText;
     if (!taskText.trim()) return;
 
-    const taskDueDate = dueDate || (filterDate ? filterDate : (activeListId === 'calendar' ? newTaskDate : undefined));
+    const taskDueDate = dueDate || (filterDate ? filterDate : undefined);
 
     const newTask: Task = {
       id: Date.now().toString(),
@@ -188,6 +187,10 @@ export const useAppViewModel = () => {
     setTasks(prev => prev.filter(t => t.id !== id));
   };
 
+  const updateTask = (id: string, text: string) => {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, text: text.trim() } : t));
+  };
+
   const changeMonth = (offset: number) => {
     const d = new Date(viewDate);
     d.setMonth(viewDate.getMonth() + offset);
@@ -211,7 +214,7 @@ export const useAppViewModel = () => {
     state: { 
       activeListId, tasks, projectLists, filterDate, viewDate, 
       isSidebarExpanded, filteredTasks, calendarDays,
-      newTaskText, newTaskDate,
+      newTaskText,
       theme, themeMode,
       updateStatus, availableVersion
     },
@@ -221,12 +224,12 @@ export const useAppViewModel = () => {
       setViewDate, 
       setIsSidebarExpanded, 
       setNewTaskText,
-      setNewTaskDate,
       addTask, 
       createProject, 
       deleteProject, 
       toggleTask, 
       deleteTask,
+      updateTask,
       changeMonth,
       setThemeMode,
       startUpdate,

@@ -261,6 +261,11 @@ body {
   color: #e81123;
 }
 
+.sidebar-delete-btn {
+  margin-right: -4px;
+  margin-left: -4px;
+}
+
 .list-item:hover .entity-delete-trigger {
   opacity: 0.6;
 }
@@ -781,6 +786,19 @@ animation: fadeIn 0.2s ease-out;
 
 .anim-bounce {
   animation: bounce 1s infinite;
+}
+
+.app-version-label {
+  position: fixed;
+  bottom: 8px;
+  right: 12px;
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  opacity: 0.4;
+  font-family: 'Michroma', sans-serif;
+  letter-spacing: 1px;
+  pointer-events: none;
+  z-index: 100;
 }
 
 @keyframes bounce {
