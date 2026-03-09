@@ -88,13 +88,6 @@ function createWindow() {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-available', info.version);
         }
-        
-        // Native Notification
-        new Notification({
-          title: 'Update Available',
-          body: `A new version (${info.version}) of TaskFlow is available. Click the indicator to download.`,
-          silent: false
-        }).show();
       });
 
       autoUpdater.on('download-progress', (progressObj) => {
@@ -114,13 +107,6 @@ function createWindow() {
           mainWindow.webContents.send('update-downloaded');
         }
         
-        // Native Notification for Ready to Install
-        new Notification({
-          title: 'Update Ready',
-          body: 'The update has been downloaded and is ready to install. TaskFlow will restart.',
-          silent: false
-        }).show();
-
         // IMMEDIATELY QUIT AND INSTALL SILENTLY ONCE DOWNLOADED
         // This achieves the "Discord-style" flow where clicking download icon eventually leads to auto-restart
       });
@@ -130,12 +116,6 @@ function createWindow() {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-error', err.message);
         }
-
-        new Notification({
-          title: 'Update Error',
-          body: `Failed to check for updates: ${err.message}`,
-          silent: true
-        }).show();
       });
 
       // IPC to trigger download/install
