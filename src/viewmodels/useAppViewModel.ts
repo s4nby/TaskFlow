@@ -24,6 +24,7 @@ export const useAppViewModel = () => {
   // Update management state
   const [updateStatus, setUpdateStatus] = useState<'none' | 'available' | 'downloading' | 'ready'>('none');
   const [availableVersion, setAvailableVersion] = useState<string | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState(0);
 
   // Restore internal state for task creation
   const [newTaskText, setNewTaskText] = useState('');
@@ -59,8 +60,14 @@ export const useAppViewModel = () => {
           setUpdateStatus('none');
         });
 
+        ipcRenderer.on('update-progress', (_event: any, progressObj: any) => {
+          setUpdateStatus('downloading');
+          setDownloadProgress(Math.floor(progressObj.percent));
+        });
+
         ipcRenderer.on('update-downloaded', () => {
           setUpdateStatus('ready');
+          setDownloadProgress(100);
           // Discord-style: Auto install immediately when ready
           ipcRenderer.send('install-update');
         });
@@ -68,6 +75,7 @@ export const useAppViewModel = () => {
         ipcRenderer.on('update-error', (_event: any, message: string) => {
           console.error('Update Error:', message);
           setUpdateStatus('none');
+          setDownloadProgress(0);
         });
       }
     };
@@ -78,6 +86,7 @@ export const useAppViewModel = () => {
         ipcRenderer.removeAllListeners('system-theme-updated');
         ipcRenderer.removeAllListeners('update-available');
         ipcRenderer.removeAllListeners('update-not-available');
+        ipcRenderer.removeAllListeners('update-progress');
         ipcRenderer.removeAllListeners('update-downloaded');
         ipcRenderer.removeAllListeners('update-error');
       }
@@ -328,7 +337,7 @@ export const useAppViewModel = () => {
       isSidebarExpanded, filteredTasks, calendarDays,
       newTaskText,
       theme, themeMode,
-      updateStatus, availableVersion
+      updateStatus, availableVersion, downloadProgress
     },
     commands: { 
       setActiveListId, 

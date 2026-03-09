@@ -17,7 +17,6 @@ const ProjectNamingModal = lazy(() => import('./components/ProjectNamingModal'))
 // @ts-ignore
 const electron = window.require ? window.require('electron') : null;
 const ipcRenderer = electron ? electron.ipcRenderer : null;
-const shell = electron ? electron.shell : null;
 
 const App: React.FC = () => {
   const { state, commands } = useAppViewModel();
@@ -177,16 +176,9 @@ const App: React.FC = () => {
                     commands.installUpdate();
                   } else if (ipcRenderer) {
                     commands.startUpdate();
-                    // Fallback: If it stays in 'available' for too long after click, 
-                    // it might be because the provider is failing. Offer manual download.
-                    setTimeout(() => {
-                      if (state.updateStatus === 'available' && shell) {
-                        shell.openExternal('https://github.com/s4nby/TaskFlow/releases/latest');
-                      }
-                    }, 5000);
                   }
                 }}
-                title={state.updateStatus === 'ready' ? 'Restart to Update' : state.updateStatus === 'downloading' ? 'Downloading...' : `Update Available (${state.availableVersion}) - Click to Update`}
+                title={state.updateStatus === 'ready' ? 'Restart to Update' : state.updateStatus === 'downloading' ? (state.downloadProgress > 0 ? `Downloading... ${state.downloadProgress}%` : 'Downloading...') : `Update Available (${state.availableVersion}) - Click to Update`}
               >
                 <ArrowDown size={16} className={state.updateStatus === 'downloading' ? 'anim-bounce' : ''} />
               </button>

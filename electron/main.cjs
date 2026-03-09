@@ -90,6 +90,12 @@ function createWindow() {
         }
       });
 
+      autoUpdater.on('download-progress', (progressObj) => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('update-progress', progressObj);
+        }
+      });
+
       autoUpdater.on('update-not-available', () => {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-not-available');
