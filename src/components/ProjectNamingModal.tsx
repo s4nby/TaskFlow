@@ -8,12 +8,14 @@ interface ProjectNamingModalProps {
 
 const ProjectNamingModal: React.FC<ProjectNamingModalProps> = ({ isOpen, onClose, onCreate }) => {
   const [name, setName] = useState('');
+  const [error, setError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
       inputRef.current?.focus();
       setName('');
+      setError(false);
     }
   }, [isOpen]);
 
@@ -21,7 +23,16 @@ const ProjectNamingModal: React.FC<ProjectNamingModalProps> = ({ isOpen, onClose
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim()) onCreate(name);
+    if (name.trim()) {
+      onCreate(name);
+    } else {
+      setError(true);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+    if (error) setError(false);
   };
 
   return (
@@ -37,9 +48,10 @@ const ProjectNamingModal: React.FC<ProjectNamingModalProps> = ({ isOpen, onClose
             type="text" 
             placeholder="Project Name (e.g. Q1 Marketing)" 
             value={name} 
-            onChange={e => setName(e.target.value)} 
-            className="flyout-input themed-field" 
+            onChange={handleChange} 
+            className={`flyout-input themed-field ${error ? 'error-field' : ''}`} 
           />
+          {error && <div className="error-text">Project name is required</div>}
           <div className="flyout-actions">
             <button type="button" className="btn-cancel themed-secondary-btn" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn-submit themed-primary-btn">Initialize Project</button>

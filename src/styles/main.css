@@ -650,6 +650,20 @@ animation: fadeIn 0.2s ease-out;
   border-color: var(--accent-color); background: rgba(255, 255, 255, 0.08);
 }
 
+.themed-field.error-field {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: -12px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  animation: fadeIn 0.2s ease-out;
+}
+
 .themed-primary-btn {
   background: var(--accent-color); border: none; color: white;
   padding: 8px 20px; border-radius: var(--radius-button);
