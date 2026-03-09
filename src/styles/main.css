@@ -513,7 +513,94 @@ animation: fadeIn 0.2s ease-out;
   background: rgba(255, 255, 255, 0.05);
 }
 
-/* HUB VIEW SPECIFICS */
+.task-item-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.task-drag-handle {
+  cursor: grab;
+  color: var(--text-secondary);
+  opacity: 0.2;
+  transition: opacity 0.2s;
+  padding: 0 4px;
+}
+
+.task-item:hover .task-drag-handle {
+  opacity: 0.6;
+}
+
+.subtask-section {
+  padding-left: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.subtask-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+}
+
+.task-checkbox.mini {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+}
+
+.subtask-text {
+  font-size: 0.8rem;
+  color: var(--text-primary);
+}
+
+.subtask-text.completed {
+  color: var(--text-secondary);
+  text-decoration: line-through;
+}
+
+.subtask-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  padding: 2px 4px;
+  width: 100%;
+  outline: none;
+}
+
+.subtask-input:focus {
+  border-color: var(--accent-color);
+}
+
+/* Trends & Export UI */
+.trends-section {
+  margin-top: 24px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+}
+
+.trends-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  padding: 6px 12px;
+}
 .hub-card-header {
   display: flex;
   justify-content: space-between;

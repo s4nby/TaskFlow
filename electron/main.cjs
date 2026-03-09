@@ -1,5 +1,6 @@
-const { app, BrowserWindow, ipcMain, Menu, nativeTheme, Notification } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, nativeTheme, Notification, Tray, globalShortcut, shell, dialog } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 let mainWindow;
 
@@ -30,6 +31,33 @@ function createWindow() {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     
+    // Register Global Hotkey: Alt+Shift+N for Quick Entry
+    globalShortcut.register('Alt+Shift+N', () => {
+      if (mainWindow) {
+        mainWindow.show();
+        mainWindow.webContents.send('global-new-task');
+      }
+    });
+
+    // Create System Tray
+    try {
+      const iconPath = path.join(__dirname, '../public/vite.svg'); // Placeholder
+      tray = new Tray(iconPath);
+      const contextMenu = Menu.buildFromTemplate([
+        { label: 'TaskFlow Dashboard', click: () => { mainWindow.show(); mainWindow.webContents.send('navigate', 'hub'); } },
+        { label: 'To Do List', click: () => { mainWindow.show(); mainWindow.webContents.send('navigate', 'todo'); } },
+        { type: 'separator' },
+        { label: 'Quick Glance (Today)', click: () => { mainWindow.show(); mainWindow.webContents.send('navigate', 'calendar'); } },
+        { type: 'separator' },
+        { label: 'Quit TaskFlow', click: () => { app.isQuitting = true; app.quit(); } }
+      ]);
+      tray.setToolTip('TaskFlow Productivity');
+      tray.setContextMenu(contextMenu);
+      tray.on('click', () => mainWindow.show());
+    } catch (err) {
+      console.error('Failed to create tray:', err);
+    }
+
     // Defer update check to avoid blocking startup
     if (process.env.NODE_ENV !== 'development') {
       const { autoUpdater } = require('electron-updater');
@@ -108,7 +136,26 @@ function createWindow() {
       mainWindow.webContents.send('system-theme-updated', nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
     }
   });
+
+  // Export Logic IPC
+  ipcMain.handle('export-to-markdown', async (event, data) => {
+    const { filePath } = await dialog.showSaveDialog({
+      title: 'Export Tasks to Markdown',
+      defaultPath: 'TaskFlow_Export.md',
+      filters: [{ name: 'Markdown', extensions: ['md'] }]
+    });
+
+    if (filePath) {
+      fs.writeFileSync(filePath, data);
+      return true;
+    }
+    return false;
+  });
 }
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
+});
 
 app.whenReady().then(createWindow);
 

@@ -25,9 +25,51 @@ const App: React.FC = () => {
   useEffect(() => {
     // Check for updates on mount
     commands.checkForUpdates();
-  }, []);
+
+    // Listen for global events
+    if (ipcRenderer) {
+      const handleGlobalNewTask = () => {
+        commands.setActiveListId('todo');
+        // Small delay to ensure view switch before focus if we had focus logic
+      };
+      
+      const handleNavigate = (_event: any, target: string) => {
+        commands.setActiveListId(target);
+      };
+
+      ipcRenderer.on('global-new-task', handleGlobalNewTask);
+      ipcRenderer.on('navigate', handleNavigate);
+
+      return () => {
+        ipcRenderer.removeListener('global-new-task', handleGlobalNewTask);
+        ipcRenderer.removeListener('navigate', handleNavigate);
+      };
+    }
+  }, [ipcRenderer]);
 
   const activeProject = state.projectLists.find(p => p.id === state.activeListId);
+
+  const handleExport = async () => {
+    if (!ipcRenderer) return;
+    
+    let md = "# TaskFlow Data Export\n\n";
+    state.projectLists.forEach(p => {
+      md += `## Project: ${p.name} (Created: ${p.createdDate})\n`;
+      const projTasks = state.tasks.filter(t => t.listId === p.id);
+      projTasks.forEach(t => {
+        md += `- [${t.completed ? 'x' : ' '}] ${t.text} (Priority: ${t.priority})\n`;
+        t.subTasks?.forEach(s => {
+          md += `  - [${s.completed ? 'x' : ' '}] ${s.text}\n`;
+        });
+      });
+      md += "\n";
+    });
+
+    const success = await ipcRenderer.invoke('export-to-markdown', md);
+    if (success) {
+      alert('Data exported successfully!');
+    }
+  };
 
   const toggleTheme = () => {
     const modes: ('system' | 'light' | 'dark')[] = ['system', 'light', 'dark'];
@@ -51,6 +93,7 @@ const App: React.FC = () => {
                     commands.setActiveListId(id);
                   }}
                   onDeleteProject={(id) => commands.deleteProject(id)}
+                  onExport={handleExport}
                 />
               );
             case 'calendar':
@@ -89,6 +132,10 @@ const App: React.FC = () => {
                   hideQuickAdd={state.activeListId === 'important'}
                   isPreferred={activeProject?.isPreferred}
                   onTogglePreference={activeProject ? () => commands.toggleProjectPreference(activeProject.id) : undefined}
+                  onSetPriority={commands.setTaskPriority}
+                  onAddSubTask={commands.addSubTask}
+                  onToggleSubTask={commands.toggleSubTask}
+                  onReorderTasks={commands.reorderTasks}
                 />
               );
           }

@@ -1,9 +1,20 @@
+export type Priority = 'low' | 'medium' | 'high';
+
+export interface SubTask {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
 export interface Task {
   id: string;
   text: string;
   completed: boolean;
   listId: string;
   dueDate?: string; // ISO YYYY-MM-DD
+  priority: Priority;
+  index: number;
+  subTasks: SubTask[];
 }
 
 export interface ProjectList {
@@ -11,6 +22,7 @@ export interface ProjectList {
   name: string;
   createdDate: string; // ISO YYYY-MM-DD
   isPreferred?: boolean;
+  index: number;
 }
 
 export interface DayData {

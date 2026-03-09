@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import type { Task, ProjectList, DayData, ViewState } from '../models/types';
+import type { Task, ProjectList, DayData, ViewState, Priority, SubTask } from '../models/types';
 
 export const useAppViewModel = () => {
   // Synchronous initialization for "Instant Launch"
@@ -99,11 +99,18 @@ export const useAppViewModel = () => {
   }, [tasks, projectLists]);
 
   const filteredTasks = useMemo(() => {
+    let list: Task[] = [];
     if (filterDate) {
-      return tasks.filter(t => t.dueDate === filterDate);
+      list = tasks.filter(t => t.dueDate === filterDate);
+    } else {
+      list = tasks.filter(t => t.listId === activeListId);
     }
-    return tasks.filter(t => t.listId === activeListId);
+    return list.sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
   }, [tasks, activeListId, filterDate]);
+
+  const sortedProjectLists = useMemo(() => {
+    return [...projectLists].sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+  }, [projectLists]);
 
   const calendarDays = useMemo(() => {
     if (activeListId !== 'calendar') return []; // Don't compute if not in calendar view
@@ -159,11 +166,14 @@ export const useAppViewModel = () => {
     return days.slice(0, 35);
   }, [viewDate, tasks, projectLists, activeListId]);
 
-  const addTask = async (text?: string, dueDate?: string) => {
+  const addTask = async (text?: string, dueDate?: string, priority: Priority = 'medium') => {
     const taskText = text || newTaskText;
     if (!taskText.trim()) return;
 
     const taskDueDate = dueDate || (filterDate ? filterDate : undefined);
+    
+    const listTasks = tasks.filter(t => t.listId === activeListId);
+    const maxIndex = listTasks.length > 0 ? Math.max(...listTasks.map(t => t.index ?? -1)) : -1;
 
     const newTask: Task = {
       id: Date.now().toString(),
@@ -171,16 +181,21 @@ export const useAppViewModel = () => {
       completed: false,
       listId: activeListId === 'hub' || activeListId === 'calendar' ? 'todo' : activeListId,
       dueDate: taskDueDate,
+      priority,
+      index: maxIndex + 1,
+      subTasks: []
     };
     setTasks(prev => [...prev, newTask]);
     setNewTaskText('');
   };
 
   const createProject = async (name: string, date?: string) => {
+    const maxIndex = projectLists.length > 0 ? Math.max(...projectLists.map(p => p.index ?? -1)) : -1;
     const newProject: ProjectList = { 
       id: Date.now().toString(), 
       name: name.trim(),
-      createdDate: date || new Date().toISOString().split('T')[0]
+      createdDate: date || new Date().toISOString().split('T')[0],
+      index: maxIndex + 1
     };
     setProjectLists(prev => [...prev, newProject]);
     setActiveListId(newProject.id);
@@ -212,6 +227,44 @@ export const useAppViewModel = () => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, text: text.trim() } : t));
   };
 
+  const setTaskPriority = (id: string, priority: Priority) => {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, priority } : t));
+  };
+
+  const addSubTask = (taskId: string, text: string) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        const newSub: SubTask = { id: Date.now().toString(), text, completed: false };
+        return { ...t, subTasks: [...t.subTasks, newSub] };
+      }
+      return t;
+    }));
+  };
+
+  const toggleSubTask = (taskId: string, subTaskId: string) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        return {
+          ...t,
+          subTasks: t.subTasks.map(s => s.id === subTaskId ? { ...s, completed: !s.completed } : s)
+        };
+      }
+      return t;
+    }));
+  };
+
+  const reorderTasks = (listId: string, newOrder: Task[]) => {
+    setTasks(prev => {
+      const otherTasks = prev.filter(t => t.listId !== listId);
+      const updatedOrder = newOrder.map((t, i) => ({ ...t, index: i }));
+      return [...otherTasks, ...updatedOrder];
+    });
+  };
+
+  const reorderProjects = (newOrder: ProjectList[]) => {
+    setProjectLists(newOrder.map((p, i) => ({ ...p, index: i })));
+  };
+
   const changeMonth = (offset: number) => {
     const d = new Date(viewDate);
     d.setMonth(viewDate.getMonth() + offset);
@@ -239,7 +292,7 @@ export const useAppViewModel = () => {
 
   return {
     state: { 
-      activeListId, tasks, projectLists, filterDate, viewDate, 
+      activeListId, tasks, projectLists: sortedProjectLists, filterDate, viewDate, 
       isSidebarExpanded, filteredTasks, calendarDays,
       newTaskText,
       theme, themeMode,
@@ -259,6 +312,11 @@ export const useAppViewModel = () => {
       toggleTask, 
       deleteTask,
       updateTask,
+      setTaskPriority,
+      addSubTask,
+      toggleSubTask,
+      reorderTasks,
+      reorderProjects,
       changeMonth,
       setThemeMode,
       startUpdate,
