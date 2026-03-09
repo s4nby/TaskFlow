@@ -135,8 +135,9 @@ function createWindow() {
         autoUpdater.quitAndInstall(true, true);
       });
 
-      // Only check once on startup after 3 seconds
+      // Check on startup after 3 seconds, then every hour
       setTimeout(checkUpdates, 3000);
+      setInterval(checkUpdates, 60 * 60 * 1000);
     }
   });
 
