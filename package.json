@@ -1,7 +1,7 @@
 {
-  "name": "to-do-list-app",
+  "name": "taskflow",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -24,8 +24,7 @@
       "package.json"
     ],
     "win": {
-      "target": "dir",
-      "cscLink": null
+      "target": "portable"
     }
   },
   "dependencies": {
