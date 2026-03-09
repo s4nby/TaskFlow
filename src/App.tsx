@@ -81,6 +81,7 @@ const App: React.FC = () => {
                   onDeleteTask={(id) => commands.deleteTask(id)}
                   onUpdateTask={(id, text) => commands.updateTask(id, text)}
                   onClearFilter={() => commands.setFilterDate(null)}
+                  hideQuickAdd={state.activeListId === 'important'}
                 />
               );
           }

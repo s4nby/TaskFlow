@@ -13,11 +13,13 @@ interface TaskListViewProps {
   onDeleteTask: (id: string) => void;
   onUpdateTask: (id: string, text: string) => void;
   onClearFilter: () => void;
+  hideQuickAdd?: boolean;
 }
 
 const TaskListView: React.FC<TaskListViewProps> = ({ 
   title, tasks, filterDate, newTaskText, 
-  onSetNewTaskText, onAddTask, onToggleTask, onDeleteTask, onUpdateTask, onClearFilter 
+  onSetNewTaskText, onAddTask, onToggleTask, onDeleteTask, onUpdateTask, onClearFilter,
+  hideQuickAdd = false
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
@@ -51,11 +53,13 @@ const TaskListView: React.FC<TaskListViewProps> = ({
           <p>{tasks.length} items in this workspace</p>
         )}
       </header>
-      <form className="quick-add-container" onSubmit={onAddTask}>
-        <div className="input-group themed-input-container">
-          <input type="text" className="quick-add-input" placeholder="Add task to workspace..." value={newTaskText} onChange={(e) => onSetNewTaskText(e.target.value)} />
-        </div>
-      </form>
+      {!hideQuickAdd && (
+        <form className="quick-add-container" onSubmit={onAddTask}>
+          <div className="input-group themed-input-container">
+            <input type="text" className="quick-add-input" placeholder="Add task to workspace..." value={newTaskText} onChange={(e) => onSetNewTaskText(e.target.value)} />
+          </div>
+        </form>
+      )}
       <div className="task-list">
         {tasks.map(task => (
           <div key={task.id} className="task-item themed-border">

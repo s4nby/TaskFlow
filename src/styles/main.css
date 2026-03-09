@@ -98,11 +98,12 @@ body {
 
 .header-branding {
   font-weight: 700;
-  font-size: 0.75rem;
-  letter-spacing: 2px;
-  color: #e5e5e5;
-  text-transform: uppercase;
-  font-family: 'Michroma', 'Eurostile', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  text-transform: none;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  opacity: 0.9;
 }
 
 .header-icon-btn {
