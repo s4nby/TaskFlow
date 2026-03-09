@@ -213,16 +213,41 @@ const TaskListView: React.FC<TaskListViewProps> = ({
                 )}
               </div>
               <div className="task-actions" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                <div 
-                  className={`priority-indicator ${task.priority}`} 
-                  onClick={() => {
-                    const next: Priority = task.priority === 'low' ? 'medium' : task.priority === 'medium' ? 'high' : 'low';
-                    onSetPriority(task.id, next);
-                  }}
-                  title={`Priority: ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`}
-                >
-                  {(task.priority === 'medium' || task.priority === 'low') && <ChevronUp size={10} />}
-                  {(task.priority === 'medium' || task.priority === 'high') && <ChevronDown size={10} />}
+                <div className={`priority-indicator-container ${task.priority}`}>
+                  {task.priority === 'medium' ? (
+                    <>
+                      <button 
+                        className="priority-btn up" 
+                        onClick={() => onSetPriority(task.id, 'high')}
+                        title="Set High Priority"
+                      >
+                        <ChevronUp size={10} />
+                      </button>
+                      <button 
+                        className="priority-btn down" 
+                        onClick={() => onSetPriority(task.id, 'low')}
+                        title="Set Low Priority"
+                      >
+                        <ChevronDown size={10} />
+                      </button>
+                    </>
+                  ) : task.priority === 'low' ? (
+                    <button 
+                      className="priority-btn single" 
+                      onClick={() => onSetPriority(task.id, 'medium')}
+                      title="Set Medium Priority"
+                    >
+                      <ChevronUp size={10} />
+                    </button>
+                  ) : (
+                    <button 
+                      className="priority-btn single" 
+                      onClick={() => onSetPriority(task.id, 'medium')}
+                      title="Set Medium Priority"
+                    >
+                      <ChevronDown size={10} />
+                    </button>
+                  )}
                 </div>
                 {editingId === task.id ? (
                   <button className="entity-delete-trigger" onClick={() => setEditingId(null)} title="Cancel"><X size={14} /></button>

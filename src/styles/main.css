@@ -201,7 +201,8 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
+  padding: 0 12px;
+  height: 36px;
   border-radius: 0 6px 6px 0;
   cursor: pointer;
   transition: all 0.2s;
@@ -230,9 +231,20 @@ body {
   flex-shrink: 0;
 }
 
+.list-content {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  height: 100%;
+}
+
 .list-name {
   opacity: 1;
   transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
 }
 
 .collapsed .list-name {
@@ -262,8 +274,8 @@ body {
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  opacity: 0.4;
-  transition: all 0.2s;
+  opacity: 0; /* Hidden by default */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 4px;
   border-radius: 4px;
   display: flex;
@@ -296,7 +308,12 @@ body {
   background: rgba(255, 165, 0, 0.1) !important;
 }
 
+/* Show actions on row hover */
 .list-item:hover .entity-delete-trigger {
+  opacity: 0.6;
+}
+
+.task-item:hover .entity-delete-trigger {
   opacity: 0.6;
 }
 
@@ -1012,25 +1029,26 @@ animation: fadeIn 0.2s ease-out;
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: 4px;
+  padding: 6px; /* Increased hit area */
+  margin: -4px -4px 0 0; /* Offset padding to keep icon aligned */
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   transition: all 0.2s;
-  z-index: 10;
+  z-index: 20; /* Ensure it's above everything in the cell */
 }
 
 .day-cell:hover .day-add-project-btn {
-  opacity: 0.8;
+  opacity: 0.6;
 }
 
 .day-add-project-btn:hover {
   background: rgba(59, 130, 246, 0.2);
   color: var(--accent-color);
   opacity: 1 !important;
-  transform: scale(1.1);
+  transform: scale(1.2);
 }
 
 .day-number {
@@ -1107,34 +1125,48 @@ animation: fadeIn 0.2s ease-out;
   50% { transform: translateY(-4px); }
 }
 
-.priority-indicator {
+.priority-indicator-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 24px;
   height: 24px;
-  cursor: pointer;
   border-radius: 4px;
   transition: all 0.2s;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--glass-border);
+  overflow: hidden;
 }
 
-.priority-indicator:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
+.priority-btn {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+  padding: 0;
+  color: inherit;
+  opacity: 0.6;
 }
 
-.priority-indicator.low { color: #3b82f6; }
-.priority-indicator.medium { color: #f59e0b; }
-.priority-indicator.high { color: #ef4444; }
-
-.priority-indicator.medium svg {
-  margin: -3px 0;
+.priority-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
 }
 
-#app-wrapper.light-theme .priority-indicator {
+.priority-btn.up { height: 50%; }
+.priority-btn.down { height: 50%; }
+.priority-btn.single { height: 100%; opacity: 1; }
+
+.priority-indicator-container.low { color: #3b82f6; }
+.priority-indicator-container.medium { color: #f59e0b; }
+.priority-indicator-container.high { color: #ef4444; }
+
+#app-wrapper.light-theme .priority-indicator-container {
   background: rgba(0, 0, 0, 0.03);
 }
 

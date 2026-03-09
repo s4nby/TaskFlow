@@ -68,7 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
             
             {isExpanded && (
-              <div className="list-content" style={{ display: 'flex', flex: 1, alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+              <div className="list-content">
                 {editingId === project.id ? (
                   <input 
                     type="text" 

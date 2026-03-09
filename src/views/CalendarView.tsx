@@ -63,13 +63,19 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                       className="day-add-project-btn"
                       onClick={(e) => {
                         e.stopPropagation();
-                        e.preventDefault();
+                        // Call the handler directly
                         onInitializeProject(dayData.dateStr);
                       }}
-                      onMouseDown={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                      }}
+                      onMouseUp={(e) => {
+                        e.stopPropagation();
+                      }}
                       title="Initialize Project on this date"
+                      type="button"
                     >
-                      <Plus size={14} />
+                      <Plus size={14} style={{ pointerEvents: 'none' }} />
                     </button>
                   </div>
                   <div className="day-entities">
