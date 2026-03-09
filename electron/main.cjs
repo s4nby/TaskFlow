@@ -81,6 +81,9 @@ function createWindow() {
       const checkUpdates = () => {
         autoUpdater.checkForUpdates().catch(err => {
           console.error('Update metadata check failed:', err);
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('update-error', err.message);
+          }
         });
       };
 
