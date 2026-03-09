@@ -36,9 +36,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     setEditingId(null);
   };
 
-  // Filter out starred projects from the general sidebar list
-  const generalProjects = projectLists.filter(p => !p.isPreferred);
-
   return (
     <aside className={`sidebar ${isExpanded ? 'expanded' : 'collapsed'}`}>
       <div className="list-container">
@@ -68,9 +65,11 @@ const Sidebar: React.FC<SidebarProps> = ({
           {isExpanded ? 'PROJECTS' : <div className="divider" />}
         </div>
 
-        {generalProjects.map(project => (
+        {projectLists.map(project => (
           <div key={project.id} className={`list-item ${activeListId === project.id ? 'active' : ''}`} onClick={() => onNavigate(project.id)}>
-            <div className="list-icon"><FolderKanban size={18} /></div>
+            <div className="list-icon">
+              {project.isPreferred ? <Star size={18} fill="#fbbf24" color="#fbbf24" /> : <FolderKanban size={18} />}
+            </div>
             
             {isExpanded && (
               <div className="list-content" style={{ display: 'flex', flex: 1, alignItems: 'center', gap: '8px', overflow: 'hidden' }}>

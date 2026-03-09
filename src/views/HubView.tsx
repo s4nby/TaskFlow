@@ -18,9 +18,6 @@ const HubView: React.FC<HubViewProps> = ({
   const totalTasks = tasks.length;
   const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-  const starredProjects = projectLists.filter(p => p.isPreferred);
-  const generalProjects = projectLists.filter(p => !p.isPreferred);
-
   return (
     <div className="standard-page">
       <header className="header-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -50,36 +47,6 @@ const HubView: React.FC<HubViewProps> = ({
         </p>
       </div>
 
-      {starredProjects.length > 0 && (
-        <div className="hub-section" style={{ marginTop: '32px' }}>
-          <div className="sidebar-section-header" style={{ paddingLeft: 0, marginBottom: '12px' }}>
-            IMPORTANT STARRED PROJECTS <div className="divider" />
-          </div>
-          <div className="hub-grid">
-            {starredProjects.map(proj => (
-              <div key={proj.id} className="hub-card" onClick={() => onSelectProject(proj.id)} style={{ borderColor: 'var(--accent-color)', background: 'rgba(59, 130, 246, 0.03)' }}>
-                <div className="hub-card-header">
-                  <Star size={18} fill="#fbbf24" color="#fbbf24" />
-                  <button 
-                    className="entity-delete-trigger" 
-                    onClick={(e) => {
-                      e.stopPropagation(); 
-                      onDeleteProject(proj.id);
-                    }} 
-                    title="Delete Project"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-                <h3>{proj.name}</h3>
-                <p>{tasks.filter(t => t.listId === proj.id).length} active items</p>
-                <ArrowRight className="hub-card-arrow" size={14} />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="hub-section" style={{ marginTop: '32px' }}>
         <div className="sidebar-section-header" style={{ paddingLeft: 0, marginBottom: '12px' }}>
           PROJECTS <div className="divider" />
@@ -89,10 +56,10 @@ const HubView: React.FC<HubViewProps> = ({
             <Plus size={24} />
             <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Initialize Project</span>
           </div>
-          {generalProjects.map(proj => (
-            <div key={proj.id} className="hub-card" onClick={() => onSelectProject(proj.id)}>
+          {projectLists.map(proj => (
+            <div key={proj.id} className="hub-card" onClick={() => onSelectProject(proj.id)} style={proj.isPreferred ? { borderColor: 'var(--accent-color)', background: 'rgba(59, 130, 246, 0.03)' } : {}}>
               <div className="hub-card-header">
-                <FolderKanban size={18} color="var(--accent-color)" />
+                {proj.isPreferred ? <Star size={18} fill="#fbbf24" color="#fbbf24" /> : <FolderKanban size={18} color="var(--accent-color)" />}
                 <button 
                   className="entity-delete-trigger" 
                   onClick={(e) => {

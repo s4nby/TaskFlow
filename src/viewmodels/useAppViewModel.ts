@@ -111,6 +111,9 @@ export const useAppViewModel = () => {
     let list: Task[] = [];
     if (filterDate) {
       list = tasks.filter(t => t.dueDate === filterDate);
+    } else if (activeListId === 'important') {
+      const preferredProjectIds = projectLists.filter(p => p.isPreferred).map(p => p.id);
+      list = tasks.filter(t => t.priority === 'high' || (t.listId && preferredProjectIds.includes(t.listId)));
     } else {
       list = tasks.filter(t => t.listId === activeListId);
     }
