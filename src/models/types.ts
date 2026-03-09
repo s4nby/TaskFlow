@@ -34,3 +34,4 @@ export interface DayData {
 }
 
 export type ViewState = 'hub' | 'todo' | 'calendar' | 'important' | string;
+export type UpdateStatus = 'none' | 'available' | 'downloading' | 'ready' | 'error';

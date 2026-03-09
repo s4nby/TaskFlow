@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import type { Task, ProjectList, DayData, ViewState, Priority, SubTask } from '../models/types';
+import type { Task, ProjectList, DayData, ViewState, Priority, SubTask, UpdateStatus } from '../models/types';
 
 export const useAppViewModel = () => {
   // Synchronous initialization for "Instant Launch"
@@ -22,7 +22,7 @@ export const useAppViewModel = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
   // Update management state
-  const [updateStatus, setUpdateStatus] = useState<'none' | 'available' | 'downloading' | 'ready'>('none');
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('none');
   const [availableVersion, setAvailableVersion] = useState<string | null>(null);
   const [downloadProgress, setDownloadProgress] = useState(0);
 
@@ -74,7 +74,7 @@ export const useAppViewModel = () => {
 
         ipcRenderer.on('update-error', (_event: any, message: string) => {
           console.error('Update Error:', message);
-          setUpdateStatus('none');
+          setUpdateStatus('error');
           setDownloadProgress(0);
         });
       }
@@ -295,6 +295,7 @@ export const useAppViewModel = () => {
   const startUpdate = () => {
     if (ipcRenderer) {
       setUpdateStatus('downloading');
+      setDownloadProgress(0);
       ipcRenderer.send('start-update');
     }
   };

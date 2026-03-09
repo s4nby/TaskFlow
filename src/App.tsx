@@ -178,7 +178,12 @@ const App: React.FC = () => {
                     commands.startUpdate();
                   }
                 }}
-                title={state.updateStatus === 'ready' ? 'Restart to Update' : state.updateStatus === 'downloading' ? (state.downloadProgress > 0 ? `Downloading... ${state.downloadProgress}%` : 'Downloading...') : `Update Available (${state.availableVersion}) - Click to Update`}
+                title={
+                  state.updateStatus === 'ready' ? 'Restart to Update' : 
+                  state.updateStatus === 'downloading' ? (state.downloadProgress > 0 ? `Downloading... ${state.downloadProgress}%` : 'Downloading...') : 
+                  state.updateStatus === 'error' ? 'Update Failed - Click to Retry' :
+                  `Update Available (${state.availableVersion}) - Click to Update`
+                }
               >
                 <ArrowDown size={16} className={state.updateStatus === 'downloading' ? 'anim-bounce' : ''} />
               </button>

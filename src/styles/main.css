@@ -887,8 +887,16 @@ animation: fadeIn 0.2s ease-out;
   color: var(--accent-color);
 }
 
+.glyph-btn.update-indicator.downloading {
+  color: #f59e0b; /* Orange while downloading */
+}
+
 .glyph-btn.update-indicator.ready {
   color: #10b981; /* Green for ready */
+}
+
+.glyph-btn.update-indicator.error {
+  color: #ef4444; /* Red for error */
 }
 
 .anim-bounce {
