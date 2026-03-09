@@ -105,7 +105,16 @@ export const useAppViewModel = () => {
     } else {
       list = tasks.filter(t => t.listId === activeListId);
     }
-    return list.sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+
+    const priorityWeight = { high: 3, medium: 2, low: 1 };
+
+    return list.sort((a, b) => {
+      const pA = priorityWeight[a.priority] || 0;
+      const pB = priorityWeight[b.priority] || 0;
+      
+      if (pA !== pB) return pB - pA; // Sort by priority first
+      return (a.index ?? 0) - (b.index ?? 0); // Then by manual index
+    });
   }, [tasks, activeListId, filterDate]);
 
   const sortedProjectLists = useMemo(() => {

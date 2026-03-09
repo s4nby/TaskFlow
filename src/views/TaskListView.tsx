@@ -153,7 +153,6 @@ const TaskListView: React.FC<TaskListViewProps> = ({
                   className="priority-select" 
                   value={task.priority} 
                   onChange={(e) => onSetPriority(task.id, e.target.value as Priority)}
-                  style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '0.7rem' }}
                 >
                   <option value="low">Low</option>
                   <option value="medium">Med</option>
