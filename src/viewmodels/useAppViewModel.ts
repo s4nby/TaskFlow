@@ -2,37 +2,66 @@ import { useState, useEffect, useMemo } from 'react';
 import type { Task, ProjectList, DayData, ViewState } from '../models/types';
 
 export const useAppViewModel = () => {
+  // Synchronous initialization for "Instant Launch"
   const [activeListId, setActiveListId] = useState<ViewState>('hub');
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [projectLists, setProjectLists] = useState<ProjectList[]>([]);
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    const saved = localStorage.getItem('tasks');
+    try { return saved ? JSON.parse(saved) : []; } catch { return []; }
+  });
+  const [projectLists, setProjectLists] = useState<ProjectList[]>(() => {
+    const saved = localStorage.getItem('projects');
+    try { return saved ? JSON.parse(saved) : []; } catch { return []; }
+  });
   const [filterDate, setFilterDate] = useState<string | null>(null);
   const [viewDate, setViewDate] = useState(new Date());
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   
-  // New internal state for task creation
+  const [themeMode, setThemeMode] = useState<'system' | 'light' | 'dark'>(() => {
+    return (localStorage.getItem('themeMode') as 'system' | 'light' | 'dark') || 'system';
+  });
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+
+  // Restore internal state for task creation
   const [newTaskText, setNewTaskText] = useState('');
   const [newTaskDate, setNewTaskDate] = useState(new Date().toISOString().split('T')[0]);
+  
+  // Access Electron IPC
+  // @ts-ignore
+  const ipcRenderer = window.require ? window.require('electron').ipcRenderer : null;
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const savedTasks = localStorage.getItem('tasks');
-        const savedProjects = localStorage.getItem('projects');
-        if (savedTasks) setTasks(JSON.parse(savedTasks));
-        if (savedProjects) setProjectLists(JSON.parse(savedProjects));
-      } catch (err) {
-        console.error("Failed to load data asynchronously", err);
+    const initTheme = async () => {
+      if (ipcRenderer) {
+        const systemTheme = await ipcRenderer.invoke('get-system-theme');
+        if (themeMode === 'system') {
+          setTheme(systemTheme);
+        } else {
+          setTheme(themeMode);
+        }
+
+        ipcRenderer.on('system-theme-updated', (_event: any, newTheme: 'light' | 'dark') => {
+          setThemeMode(prev => {
+            if (prev === 'system') setTheme(newTheme);
+            return prev;
+          });
+        });
       }
     };
-    loadData();
-  }, []);
+    initTheme();
+  }, [ipcRenderer]); // Dependency on ipcRenderer for safety
 
   useEffect(() => {
-    const saveData = async () => {
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-      localStorage.setItem('projects', JSON.stringify(projectLists));
-    };
-    saveData();
+    localStorage.setItem('themeMode', themeMode);
+    if (themeMode !== 'system') {
+      setTheme(themeMode);
+    } else if (ipcRenderer) {
+      ipcRenderer.invoke('get-system-theme').then((t: 'light' | 'dark') => setTheme(t));
+    }
+  }, [themeMode, ipcRenderer]);
+
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    localStorage.setItem('projects', JSON.stringify(projectLists));
   }, [tasks, projectLists]);
 
   const filteredTasks = useMemo(() => {
@@ -43,6 +72,8 @@ export const useAppViewModel = () => {
   }, [tasks, activeListId, filterDate]);
 
   const calendarDays = useMemo(() => {
+    if (activeListId !== 'calendar') return []; // Don't compute if not in calendar view
+
     const year = viewDate.getFullYear();
     const month = viewDate.getMonth();
     const days: DayData[] = [];
@@ -50,14 +81,31 @@ export const useAppViewModel = () => {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const nextMonthDate = new Date(year, month + 1, 1);
 
+    // Group tasks and projects by date for O(1) lookup in loop
+    const tasksByDate: Record<string, Task[]> = {};
+    tasks.forEach(t => {
+      if (t.dueDate) {
+        if (!tasksByDate[t.dueDate]) tasksByDate[t.dueDate] = [];
+        tasksByDate[t.dueDate].push(t);
+      }
+    });
+
+    const projectsByDate: Record<string, ProjectList[]> = {};
+    projectLists.forEach(p => {
+      if (p.createdDate) {
+        if (!projectsByDate[p.createdDate]) projectsByDate[p.createdDate] = [];
+        projectsByDate[p.createdDate].push(p);
+      }
+    });
+
     for (let i = 1; i <= daysInMonth; i++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
       days.push({ 
         day: i, 
         isCurrentMonth: true, 
         dateStr,
-        tasksForDate: tasks.filter(t => t.dueDate === dateStr),
-        projectsForDate: projectLists.filter(p => p.createdDate === dateStr)
+        tasksForDate: tasksByDate[dateStr] || [],
+        projectsForDate: projectsByDate[dateStr] || []
       });
     }
 
@@ -70,12 +118,12 @@ export const useAppViewModel = () => {
         day: i, 
         isCurrentMonth: false, 
         dateStr,
-        tasksForDate: tasks.filter(t => t.dueDate === dateStr),
-        projectsForDate: projectLists.filter(p => p.createdDate === dateStr)
+        tasksForDate: tasksByDate[dateStr] || [],
+        projectsForDate: projectsByDate[dateStr] || []
       });
     }
     return days.slice(0, 35);
-  }, [viewDate, tasks, projectLists]);
+  }, [viewDate, tasks, projectLists, activeListId]);
 
   const addTask = async (text?: string, dueDate?: string) => {
     const taskText = text || newTaskText;
@@ -94,11 +142,11 @@ export const useAppViewModel = () => {
     setNewTaskText('');
   };
 
-  const createProject = async (name: string) => {
+  const createProject = async (name: string, date?: string) => {
     const newProject: ProjectList = { 
       id: Date.now().toString(), 
       name: name.trim(),
-      createdDate: new Date().toISOString().split('T')[0]
+      createdDate: date || new Date().toISOString().split('T')[0]
     };
     setProjectLists(prev => [...prev, newProject]);
     setActiveListId(newProject.id);
@@ -128,7 +176,8 @@ export const useAppViewModel = () => {
     state: { 
       activeListId, tasks, projectLists, filterDate, viewDate, 
       isSidebarExpanded, filteredTasks, calendarDays,
-      newTaskText, newTaskDate
+      newTaskText, newTaskDate,
+      theme, themeMode
     },
     commands: { 
       setActiveListId, 
@@ -142,7 +191,8 @@ export const useAppViewModel = () => {
       deleteProject, 
       toggleTask, 
       deleteTask,
-      changeMonth
+      changeMonth,
+      setThemeMode
     }
   };
 };

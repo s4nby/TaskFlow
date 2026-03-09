@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, FolderKanban, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FolderKanban, ArrowRight, Plus } from 'lucide-react';
 import type { DayData, ProjectList } from '../models/types';
 
 interface CalendarViewProps {
@@ -8,10 +8,11 @@ interface CalendarViewProps {
   onSelectProject: (id: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
+  onInitializeProject: (date: string) => void;
 }
 
 const CalendarView: React.FC<CalendarViewProps> = ({ 
-  viewDate, calendarDays, onSelectProject, onPrevMonth, onNextMonth 
+  viewDate, calendarDays, onSelectProject, onPrevMonth, onNextMonth, onInitializeProject 
 }) => {
   const [resolverProjects, setResolverProjects] = useState<ProjectList[] | null>(null);
 
@@ -56,7 +57,19 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                   className={`day-cell ${hasProjects ? 'interactive' : 'disabled'} ${!dayData.isCurrentMonth ? 'ghost' : ''} ${dayData.dateStr === new Date().toISOString().split('T')[0] ? 'today' : ''}`} 
                   onClick={() => handleCellClick(dayData)}
                 >
-                  <span className="day-number">{dayData.day}</span>
+                  <div className="day-cell-header">
+                    <span className="day-number">{dayData.day}</span>
+                    <button 
+                      className="day-add-project-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onInitializeProject(dayData.dateStr);
+                      }}
+                      title="Initialize Project on this date"
+                    >
+                      <Plus size={12} />
+                    </button>
+                  </div>
                   <div className="day-entities">
                     {projectCount === 1 ? (
                       <div className="project-indicator-label" title={dayData.projectsForDate[0].name}>

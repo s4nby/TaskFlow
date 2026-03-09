@@ -1,48 +1,75 @@
-const { app, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, nativeTheme, Notification } = require('electron');
 const path = require('path');
+
+let mainWindow;
 
 function createWindow() {
   // Remove default menu
   Menu.setApplicationMenu(null);
 
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    frame: false, // Make window frameless
-    titleBarStyle: 'hidden', // Required for custom title bar on Windows
+    frame: false,
+    titleBarStyle: 'hidden',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
+      devTools: true,
     },
     backgroundColor: '#050505',
     show: false,
   });
 
   if (process.env.NODE_ENV === 'development') {
-    win.loadURL('http://localhost:5173');
+    mainWindow.loadURL('http://localhost:5173');
   } else {
-    win.loadFile(path.join(__dirname, '../dist/index.html'));
+    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 
-  win.once('ready-to-show', () => {
-    win.show();
-  });
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+    
+    // Defer update check to avoid blocking startup
+    if (process.env.NODE_ENV !== 'development') {
+      setTimeout(() => {
+        try {
+          const { autoUpdater } = require('electron-updater');
+          
+          autoUpdater.on('update-available', (info) => {
+            new Notification({
+              title: 'TaskFlow Update Available',
+              body: `Version ${info.version} is available and downloading.`
+            }).show();
+          });
 
-  // Window control IPC handlers
-  ipcMain.on('window-minimize', () => {
-    win.minimize();
-  });
+          autoUpdater.on('update-downloaded', (info) => {
+            new Notification({
+              title: 'Update Ready',
+              body: 'Restart TaskFlow to apply the latest updates.'
+            }).show();
+          });
 
-  ipcMain.on('window-maximize', () => {
-    if (win.isMaximized()) {
-      win.unmaximize();
-    } else {
-      win.maximize();
+          autoUpdater.checkForUpdatesAndNotify();
+        } catch (err) {
+          console.error('Failed to initialize auto-updater:', err);
+        }
+      }, 3000);
     }
   });
 
-  ipcMain.on('window-close', () => {
-    win.close();
+  // Window control IPC handlers
+  ipcMain.on('window-minimize', () => mainWindow.minimize());
+  ipcMain.on('window-maximize', () => mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize());
+  ipcMain.on('window-close', () => mainWindow.close());
+
+  // Theme IPC handlers
+  ipcMain.handle('get-system-theme', () => nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
+
+  nativeTheme.on('updated', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('system-theme-updated', nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
+    }
   });
 }
 
