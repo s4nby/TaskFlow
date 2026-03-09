@@ -179,6 +179,14 @@ export const useAppViewModel = () => {
     setActiveListId('hub');
   };
 
+  const toggleProjectPreference = (id: string) => {
+    setProjectLists(prev => prev.map(p => p.id === id ? { ...p, isPreferred: !p.isPreferred } : p));
+  };
+
+  const updateProjectName = (id: string, name: string) => {
+    setProjectLists(prev => prev.map(p => p.id === id ? { ...p, name: name.trim() } : p));
+  };
+
   const toggleTask = (id: string) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
   };
@@ -227,6 +235,8 @@ export const useAppViewModel = () => {
       addTask, 
       createProject, 
       deleteProject, 
+      toggleProjectPreference,
+      updateProjectName,
       toggleTask, 
       deleteTask,
       updateTask,

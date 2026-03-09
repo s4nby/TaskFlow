@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, Clock, Trash2, FilterX, Pencil, X } from 'lucide-react';
+import { Check, Clock, Trash2, FilterX, Pencil, X, Star } from 'lucide-react';
 import type { Task } from '../models/types';
 
 interface TaskListViewProps {
@@ -14,12 +14,14 @@ interface TaskListViewProps {
   onUpdateTask: (id: string, text: string) => void;
   onClearFilter: () => void;
   hideQuickAdd?: boolean;
+  isPreferred?: boolean;
+  onTogglePreference?: () => void;
 }
 
 const TaskListView: React.FC<TaskListViewProps> = ({ 
   title, tasks, filterDate, newTaskText, 
   onSetNewTaskText, onAddTask, onToggleTask, onDeleteTask, onUpdateTask, onClearFilter,
-  hideQuickAdd = false
+  hideQuickAdd = false, isPreferred = false, onTogglePreference
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
@@ -43,7 +45,19 @@ const TaskListView: React.FC<TaskListViewProps> = ({
   return (
     <div className="standard-page">
       <header className="header-section">
-        <h1>{title}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <h1>{title}</h1>
+          {onTogglePreference && (
+            <button 
+              className={`entity-delete-trigger ${isPreferred ? 'preferred' : ''}`}
+              style={{ opacity: isPreferred ? 1 : 0.4, padding: '4px' }}
+              onClick={onTogglePreference}
+              title={isPreferred ? "Remove from Favorites" : "Add to Favorites"}
+            >
+              <Star size={20} fill={isPreferred ? "#fbbf24" : "none"} color={isPreferred ? "#fbbf24" : "currentColor"} />
+            </button>
+          )}
+        </div>
         {filterDate ? (
           <div className="filter-badge">
             <span>Filtering for: <strong>{filterDate}</strong></span>

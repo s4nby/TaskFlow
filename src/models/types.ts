@@ -10,6 +10,7 @@ export interface ProjectList {
   id: string;
   name: string;
   createdDate: string; // ISO YYYY-MM-DD
+  isPreferred?: boolean;
 }
 
 export interface DayData {

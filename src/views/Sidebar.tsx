@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Layout, List, 
-  Calendar as CalendarIcon, Star, FolderKanban, Trash2 
+  Calendar as CalendarIcon, Star, FolderKanban, Trash2, Pencil
 } from 'lucide-react';
 import type { ProjectList, ViewState } from '../models/types';
 
@@ -11,11 +11,34 @@ interface SidebarProps {
   projectLists: ProjectList[];
   onNavigate: (id: ViewState) => void;
   onDeleteProject: (id: string) => void;
+  onTogglePreference: (id: string) => void;
+  onRenameProject: (id: string, name: string) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
-  isExpanded, activeListId, projectLists, onNavigate, onDeleteProject 
+  isExpanded, activeListId, projectLists, onNavigate, onDeleteProject, onTogglePreference, onRenameProject
 }) => {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingName, setEditingText] = useState('');
+
+  const startEditing = (project: ProjectList) => {
+    setEditingId(project.id);
+    setEditingText(project.name);
+  };
+
+  const saveEditing = () => {
+    if (editingId && editingName.trim()) {
+      onRenameProject(editingId, editingName);
+      setEditingId(null);
+    }
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+  };
+
+  const preferredProjects = projectLists.filter(p => p.isPreferred);
+
   return (
     <aside className={`sidebar ${isExpanded ? 'expanded' : 'collapsed'}`}>
       <div className="list-container">
@@ -31,10 +54,22 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="list-icon"><CalendarIcon size={18} /></div>
           {isExpanded && <span className="list-name">Calendar</span>}
         </div>
+        
+        <div className="sidebar-section-header">
+          {isExpanded ? 'IMPORTANT' : <div className="divider" />}
+        </div>
+
         <div className={`list-item ${activeListId === 'important' ? 'active' : ''}`} onClick={() => onNavigate('important')}>
           <div className="list-icon"><Star size={18} /></div>
-          {isExpanded && <span className="list-name">Important</span>}
+          {isExpanded && <span className="list-name">All Important</span>}
         </div>
+
+        {preferredProjects.map(project => (
+          <div key={`pref-${project.id}`} className={`list-item ${activeListId === project.id ? 'active' : ''}`} onClick={() => onNavigate(project.id)}>
+            <div className="list-icon"><FolderKanban size={18} /></div>
+            {isExpanded && <span className="list-name">{project.name}</span>}
+          </div>
+        ))}
 
         <div className="sidebar-section-header">
           {isExpanded ? 'PROJECTS' : <div className="divider" />}
@@ -42,10 +77,57 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {projectLists.map(project => (
           <div key={project.id} className={`list-item ${activeListId === project.id ? 'active' : ''}`} onClick={() => onNavigate(project.id)}>
+            {isExpanded && !editingId && (
+              <button 
+                className={`entity-delete-trigger ${project.isPreferred ? 'preferred' : ''}`}
+                style={{ marginRight: '4px', opacity: project.isPreferred ? 1 : 0.4 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTogglePreference(project.id);
+                }}
+                title={project.isPreferred ? "Remove from Favorites" : "Add to Favorites"}
+              >
+                <Star size={12} fill={project.isPreferred ? "currentColor" : "none"} />
+              </button>
+            )}
+            
             <div className="list-icon"><FolderKanban size={18} /></div>
+            
             {isExpanded && (
-              <>
-                <span className="list-name">{project.name}</span>
+              <div className="list-content" style={{ display: 'flex', flex: 1, alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                {editingId === project.id ? (
+                  <input 
+                    type="text" 
+                    className="quick-add-input" 
+                    style={{ padding: '2px 4px', fontSize: '0.85rem', background: 'var(--input-bg)' }}
+                    value={editingName} 
+                    onChange={(e) => setEditingText(e.target.value)}
+                    onBlur={saveEditing}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') saveEditing();
+                      if (e.key === 'Escape') cancelEditing();
+                    }}
+                    autoFocus
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <span className="list-name" style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{project.name}</span>
+                )}
+              </div>
+            )}
+
+            {isExpanded && !editingId && (
+              <div className="list-actions" style={{ display: 'flex', gap: '2px' }}>
+                <button 
+                  className="entity-delete-trigger task-edit-trigger" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startEditing(project);
+                  }}
+                  title="Rename Project"
+                >
+                  <Pencil size={12} />
+                </button>
                 <button 
                   className="entity-delete-trigger sidebar-delete-btn" 
                   onClick={(e) => {
@@ -56,7 +138,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 >
                   <Trash2 size={12} />
                 </button>
-              </>
+              </div>
             )}
           </div>
         ))}

@@ -82,6 +82,8 @@ const App: React.FC = () => {
                   onUpdateTask={(id, text) => commands.updateTask(id, text)}
                   onClearFilter={() => commands.setFilterDate(null)}
                   hideQuickAdd={state.activeListId === 'important'}
+                  isPreferred={activeProject?.isPreferred}
+                  onTogglePreference={activeProject ? () => commands.toggleProjectPreference(activeProject.id) : undefined}
                 />
               );
           }
@@ -156,6 +158,8 @@ const App: React.FC = () => {
             commands.setFilterDate(null);
           }}
           onDeleteProject={(id) => commands.deleteProject(id)}
+          onTogglePreference={(id) => commands.toggleProjectPreference(id)}
+          onRenameProject={(id, name) => commands.updateProjectName(id, name)}
         />
 
         <main className="main-content-integrated">
