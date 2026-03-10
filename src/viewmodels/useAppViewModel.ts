@@ -336,6 +336,40 @@ export const useAppViewModel = () => {
     setActiveListId(newProject.id);
   };
 
+  const generateAIProject = async (name: string, tasksToCreate: { text: string; priority: Priority; subTasks?: string[] }[]) => {
+    const maxIndex = projectLists.length > 0 ? Math.max(...projectLists.map(p => p.index ?? -1)) : -1;
+    
+    const now = new Date();
+    const localDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    
+    const projectId = Date.now().toString();
+    const newProject: ProjectList = { 
+      id: projectId, 
+      name: name.trim(),
+      createdDate: localDateStr,
+      index: maxIndex + 1,
+      type: 'project'
+    };
+
+    const newTasks: Task[] = tasksToCreate.map((t, idx) => ({
+      id: (Date.now() + idx + 1).toString(),
+      text: t.text,
+      completed: false,
+      listId: projectId,
+      priority: t.priority,
+      index: idx,
+      subTasks: (t.subTasks || []).map((st, sidx) => ({
+        id: (Date.now() + idx + 1000 + sidx).toString(),
+        text: st,
+        completed: false
+      }))
+    }));
+
+    setProjectLists(prev => [...prev, newProject]);
+    setTasks(prev => [...prev, ...newTasks]);
+    setActiveListId(projectId);
+  };
+
   const deleteProject = async (id: string) => {
     setProjectLists(prev => prev.filter(p => p.id !== id));
     setTasks(prev => prev.filter(t => t.listId !== id));
@@ -363,7 +397,12 @@ export const useAppViewModel = () => {
   };
 
   const setTaskPriority = (id: string, priority: Priority) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, priority } : t));
+    setTasks(prev => prev.map(t => {
+      if (t.id === id) {
+        return { ...t, priority };
+      }
+      return t;
+    }));
   };
 
   const addSubTask = (taskId: string, text: string) => {
@@ -483,6 +522,7 @@ export const useAppViewModel = () => {
       setSearchTerm,
       addTask, 
       createProject, 
+      generateAIProject,
       deleteProject, 
       toggleProjectPreference,
       updateProjectName,
@@ -504,3 +544,4 @@ export const useAppViewModel = () => {
     }
   };
 };
+

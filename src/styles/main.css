@@ -679,24 +679,28 @@ body {
 }
 
 .hub-card.new-trigger {
-  border: 1px dashed var(--glass-border);
-  background: transparent;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
   flex-direction: row;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   color: var(--text-secondary);
-  min-height: 36px;
-  height: 36px;
-  padding: 0 12px;
+  height: 32px;
+  padding: 0 14px;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
+  width: fit-content;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hub-card.new-trigger:hover {
-  transform: none !important;
+  transform: translateY(-1px) !important;
   border-color: var(--accent-color);
-  color: var(--text-primary);
-  background: rgba(59, 130, 246, 0.05);
+  color: var(--accent-color);
+  background: rgba(59, 130, 246, 0.08);
 }
 
 .modal-overlay {
@@ -1229,6 +1233,15 @@ animation: fadeIn 0.2s ease-out;
   50% { transform: translateY(-4px); }
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.anim-spin {
+  animation: spin 1s linear infinite;
+}
+
 .priority-indicator-container {
   display: flex;
   flex-direction: column;
@@ -1272,10 +1285,6 @@ animation: fadeIn 0.2s ease-out;
 
 #app-wrapper.light-theme .priority-indicator-container {
   background: rgba(0, 0, 0, 0.03);
-}
-
-.hub-section.empty-state .hub-grid {
-  transform: translateY(-40px); /* Shift upward in empty state */
 }
 
 /* Dynamic Task Input Overhaul */

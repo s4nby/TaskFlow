@@ -114,7 +114,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="list-icon"><List size={18} /></div>
           {isExpanded && (
             <div className="list-content">
-              <span className="list-name">Quick ToDoList</span>
+              <span className="list-name">Quick to-do list</span>
+
             </div>
           )}
         </div>

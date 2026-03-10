@@ -13,6 +13,7 @@ const CalendarView = lazy(() => import('./views/CalendarView'));
 const TaskListView = lazy(() => import('./views/TaskListView'));
 const PromptManagerView = lazy(() => import('./views/PromptManagerView'));
 const ProjectNamingModal = lazy(() => import('./components/ProjectNamingModal'));
+const AIListGeneratorModal = lazy(() => import('./components/AIListGeneratorModal'));
 
 // Access Electron modules safely
 // @ts-ignore
@@ -22,6 +23,7 @@ const ipcRenderer = electron ? electron.ipcRenderer : null;
 const App: React.FC = () => {
   const { state, commands } = useAppViewModel();
   const [isNamingModalOpen, setIsNamingModalOpen] = useState(false);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [selectedCreationDate, setSelectedCreationDate] = useState<string | undefined>(undefined);
   const [namingType, setNamingType] = useState<'project' | 'prompt'>('project');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -103,6 +105,7 @@ const App: React.FC = () => {
                   onDeleteProject={(id) => commands.deleteProject(id)}
                   onRenameProject={commands.updateProjectName}
                   onTogglePreference={commands.toggleProjectPreference}
+                  onOpenAI={() => setIsAIModalOpen(true)}
                 />
               );
             case 'important':
@@ -122,6 +125,7 @@ const App: React.FC = () => {
                   onRenameProject={commands.updateProjectName}
                   onTogglePreference={commands.toggleProjectPreference}
                   hideActions={true}
+                  onOpenAI={() => setIsAIModalOpen(true)}
                 />
               );
             case 'calendar':
@@ -141,16 +145,16 @@ const App: React.FC = () => {
                 />
               );
             default:
-              const title = activeProject ? activeProject.name : state.activeListId === 'todo' ? 'To Do List' : state.activeListId === 'important' ? 'Important' : 'Tasks';
+              const title = activeProject ? activeProject.name : state.activeListId === 'todo' ? 'Quick to-do list' : state.activeListId === 'important' ? 'Important' : 'Tasks';
               
               if (activeProject?.type === 'prompt') {
                 return (
                   <PromptManagerView 
                     title={title}
                     prompts={state.filteredTasks}
-                    onAddTask={(e, promptTitle) => {
+                    onAddTask={(e, promptTitle, promptText) => {
                       e.preventDefault();
-                      commands.addTask(undefined, undefined, 'low', promptTitle);
+                      commands.addTask(promptText, undefined, 'low', promptTitle);
                     }}
                     onDeleteTask={(id) => commands.deleteTask(id)}
                     onUpdateTask={(id, text, promptTitle) => {
@@ -244,7 +248,7 @@ const App: React.FC = () => {
                         commands.setSearchTerm('');
                       }}>
                         <span className="result-name">{t.text}</span>
-                        <span className="result-meta">{state.projectLists.find(p => p.id === t.listId)?.name || 'Quick ToDoList'}</span>
+                        <span className="result-meta">{state.projectLists.find(p => p.id === t.listId)?.name || 'Quick to-do list'}</span>
                       </div>
                     ))}
                   </div>
@@ -362,6 +366,14 @@ const App: React.FC = () => {
       <div className="app-version-label">v{packageJson.version}</div>
 
       <Suspense fallback={null}>
+        <AIListGeneratorModal 
+          isOpen={isAIModalOpen}
+          onClose={() => setIsAIModalOpen(false)}
+          onGenerate={(name, tasks) => {
+            commands.generateAIProject(name, tasks);
+            setIsAIModalOpen(false);
+          }}
+        />
         <ProjectNamingModal 
           isOpen={isNamingModalOpen}
           type={namingType}
