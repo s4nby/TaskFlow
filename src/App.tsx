@@ -1,4 +1,4 @@
-import React, { useState, Suspense, lazy, useEffect, useRef } from 'react';
+import React, { useState, Suspense, lazy, useEffect, useRef, useCallback } from 'react';
 import { Minus, Square, X, Menu, ChevronLeft, Sun, Moon, Monitor, ArrowDown, Calendar as CalendarIcon, Search } from 'lucide-react';
 import './styles/main.css';
 
@@ -43,7 +43,7 @@ const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [commands]);
+  }, [commands.setSearchTerm]);
 
   useEffect(() => {
     if (isSearchOpen && searchInputRef.current) {
@@ -54,12 +54,13 @@ const App: React.FC = () => {
   useEffect(() => {
     // Check for updates on mount
     commands.checkForUpdates();
+  }, [commands.checkForUpdates]);
 
+  useEffect(() => {
     // Listen for global events
     if (ipcRenderer) {
       const handleGlobalNewTask = () => {
         commands.setActiveListId('todo');
-        // Small delay to ensure view switch before focus if we had focus logic
       };
       
       const handleNavigate = (_event: any, target: string) => {
@@ -74,16 +75,16 @@ const App: React.FC = () => {
         ipcRenderer.removeListener('navigate', handleNavigate);
       };
     }
-  }, [ipcRenderer]);
+  }, [ipcRenderer, commands.setActiveListId]);
 
   const activeProject = state.projectLists.find(p => p.id === state.activeListId);
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     const modes: ('system' | 'light' | 'dark')[] = ['system', 'light', 'dark'];
     const currentIndex = modes.indexOf(state.themeMode);
     const nextIndex = (currentIndex + 1) % modes.length;
     commands.setThemeMode(modes[nextIndex]);
-  };
+  }, [state.themeMode, commands.setThemeMode]);
 
   const renderActiveView = () => {
     return (

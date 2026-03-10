@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Task, ProjectList, DayData, ViewState, Priority, SubTask, UpdateStatus } from '../models/types';
+import packageJson from '../../package.json';
 
 export const useAppViewModel = () => {
   // Synchronous initialization for "Instant Launch"
@@ -34,8 +35,8 @@ export const useAppViewModel = () => {
   // @ts-ignore
   const ipcRenderer = window.require ? window.require('electron').ipcRenderer : null;
 
-  const checkForUpdates = async () => {
-    logInfo('Update check triggered. Status: ' + updateStatus);
+  const checkForUpdates = useCallback(async () => {
+    logInfo('Update check triggered. Current Status: ' + updateStatus);
     
     // 1. Native Check (Main Process)
     if (ipcRenderer) {
@@ -51,12 +52,12 @@ export const useAppViewModel = () => {
         const release = await response.json();
         const latestVersion = release.tag_name.replace('v', '');
         
-        // Use environment variable defined at build time
-        const currentVersion = (import.meta as any).env.PACKAGE_VERSION;
+        // Use package.json version as source of truth
+        const currentVersion = packageJson.version;
         
         logInfo(`Manual Check - Current: ${currentVersion}, Latest: ${latestVersion}`);
 
-        // Simple version comparison (only works for numeric versions like 1.10.1)
+        // Simple version comparison
         const isNewer = (latest: string, current: string) => {
           const l = latest.split('.').map(Number);
           const c = current.split('.').map(Number);
@@ -70,14 +71,13 @@ export const useAppViewModel = () => {
         };
         
         const newer = isNewer(latestVersion, currentVersion);
-        logInfo(`Is newer: ${newer}, Update status: ${updateStatus}`);
-
+        
         if (newer && updateStatus === 'none') {
           logInfo('Manual Check - Update Available! Showing indicator.');
           setAvailableVersion(latestVersion);
           setUpdateStatus('available');
         } else {
-          logInfo('Manual Check - No newer version found or check in progress.');
+          logInfo('Manual Check - No newer version found or already handling update.');
         }
       } else {
         logError('GitHub API check failed with status: ' + response.status);
@@ -85,7 +85,7 @@ export const useAppViewModel = () => {
     } catch (err) {
       logError('Manual Update Check Failed: ' + err);
     }
-  };
+  }, [ipcRenderer, updateStatus]);
 
   // Helper for consistent logging
   function logInfo(msg: string) {
@@ -98,7 +98,57 @@ export const useAppViewModel = () => {
   // Expose for dev console testing
   useEffect(() => {
     (window as any).forceUpdateCheck = checkForUpdates;
-  }, []);
+  }, [checkForUpdates]);
+
+  // Dedicated Update Listeners (Runs Once)
+  useEffect(() => {
+    if (!ipcRenderer) return;
+
+    const onUpdateAvailable = (_event: any, version: string) => {
+      logInfo('IPC - Update Available: ' + version);
+      setAvailableVersion(version);
+      setUpdateStatus('available');
+    };
+
+    const onUpdateNotAvailable = () => {
+      logInfo('IPC - Update Not Available');
+      // Only reset to none if we were just checking (don't overwrite manual check if it found one)
+      setUpdateStatus(prev => prev === 'none' ? 'none' : prev);
+    };
+
+    const onUpdateProgress = (_event: any, progressObj: any) => {
+      setUpdateStatus('downloading');
+      setDownloadProgress(Math.floor(progressObj.percent));
+    };
+
+    const onUpdateDownloaded = () => {
+      logInfo('IPC - Update Downloaded');
+      setUpdateStatus('ready');
+      setDownloadProgress(100);
+      // Auto install when ready
+      ipcRenderer.send('install-update');
+    };
+
+    const onUpdateError = (_event: any, message: string) => {
+      logError('IPC - Update Error: ' + message);
+      setUpdateStatus('error');
+      setDownloadProgress(0);
+    };
+
+    ipcRenderer.on('update-available', onUpdateAvailable);
+    ipcRenderer.on('update-not-available', onUpdateNotAvailable);
+    ipcRenderer.on('update-progress', onUpdateProgress);
+    ipcRenderer.on('update-downloaded', onUpdateDownloaded);
+    ipcRenderer.on('update-error', onUpdateError);
+
+    return () => {
+      ipcRenderer.removeListener('update-available', onUpdateAvailable);
+      ipcRenderer.removeListener('update-not-available', onUpdateNotAvailable);
+      ipcRenderer.removeListener('update-progress', onUpdateProgress);
+      ipcRenderer.removeListener('update-downloaded', onUpdateDownloaded);
+      ipcRenderer.removeListener('update-error', onUpdateError);
+    };
+  }, [ipcRenderer]);
 
   useEffect(() => {
     const initTheme = async () => {
@@ -110,59 +160,25 @@ export const useAppViewModel = () => {
           setTheme(themeMode);
         }
 
-        ipcRenderer.on('system-theme-updated', (_event: any, newTheme: 'light' | 'dark') => {
+        const onSystemThemeUpdated = (_event: any, newTheme: 'light' | 'dark') => {
           setThemeMode(prev => {
             if (prev === 'system') setTheme(newTheme);
             return prev;
           });
-        });
+        };
 
-        // Update listeners
-        ipcRenderer.on('update-available', (_event: any, version: string) => {
-          setAvailableVersion(version);
-          setUpdateStatus('available');
-        });
-
-        ipcRenderer.on('update-not-available', () => {
-          setUpdateStatus('none');
-        });
-
-        ipcRenderer.on('update-progress', (_event: any, progressObj: any) => {
-          setUpdateStatus('downloading');
-          setDownloadProgress(Math.floor(progressObj.percent));
-        });
-
-        ipcRenderer.on('update-downloaded', () => {
-          setUpdateStatus('ready');
-          setDownloadProgress(100);
-          // Discord-style: Auto install immediately when ready
-          ipcRenderer.send('install-update');
-        });
-
-        ipcRenderer.on('update-error', (_event: any, message: string) => {
-          console.error('Update Error:', message);
-          setUpdateStatus('error');
-          setDownloadProgress(0);
-        });
+        ipcRenderer.on('system-theme-updated', onSystemThemeUpdated);
+        return () => {
+          ipcRenderer.removeListener('system-theme-updated', onSystemThemeUpdated);
+        };
       }
     };
     initTheme();
-
-    return () => {
-      if (ipcRenderer) {
-        ipcRenderer.removeAllListeners('system-theme-updated');
-        ipcRenderer.removeAllListeners('update-available');
-        ipcRenderer.removeAllListeners('update-not-available');
-        ipcRenderer.removeAllListeners('update-progress');
-        ipcRenderer.removeAllListeners('update-downloaded');
-        ipcRenderer.removeAllListeners('update-error');
-      }
-    };
   }, [ipcRenderer, themeMode]);
 
   useEffect(() => {
     const handleOnline = () => {
-      console.log('Connectivity restored. Re-checking for updates...');
+      logInfo('Connectivity restored. Re-checking for updates...');
       checkForUpdates();
     };
 
@@ -170,16 +186,11 @@ export const useAppViewModel = () => {
     return () => {
       window.removeEventListener('online', handleOnline);
     };
-  }, [ipcRenderer]);
+  }, [checkForUpdates]);
 
   useEffect(() => {
     localStorage.setItem('themeMode', themeMode);
-    if (themeMode !== 'system') {
-      setTheme(themeMode);
-    } else if (ipcRenderer) {
-      ipcRenderer.invoke('get-system-theme').then((t: 'light' | 'dark') => setTheme(t));
-    }
-  }, [themeMode, ipcRenderer]);
+  }, [themeMode]);
 
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
@@ -505,7 +516,7 @@ export const useAppViewModel = () => {
     }
   };
 
-  return {
+  return useMemo(() => ({
     state: { 
       activeListId, tasks, projectLists: sortedProjectLists, filterDate, viewDate, 
       isSidebarExpanded, filteredTasks, calendarDays,
@@ -542,6 +553,17 @@ export const useAppViewModel = () => {
       installUpdate,
       checkForUpdates
     }
-  };
+  }), [
+    activeListId, tasks, sortedProjectLists, filterDate, viewDate, 
+    isSidebarExpanded, filteredTasks, calendarDays,
+    newTaskText, searchTerm, searchResults,
+    theme, themeMode,
+    updateStatus, availableVersion, downloadProgress,
+    addTask, createProject, generateAIProject, deleteProject, 
+    toggleProjectPreference, updateProjectName, toggleTask, deleteTask, 
+    updateTask, setTaskPriority, addSubTask, toggleSubTask, updateSubTask, 
+    mergeTasks, reorderTasks, reorderProjects, changeMonth, setThemeMode, 
+    startUpdate, installUpdate, checkForUpdates
+  ]);
 };
 
