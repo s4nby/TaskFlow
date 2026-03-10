@@ -162,43 +162,49 @@ function createWindow() {
       autoUpdater.autoInstallOnAppQuit = true;
 
       const checkUpdates = () => {
+        console.log('[Updater] checkUpdates() called');
         autoUpdater.checkForUpdates().catch(err => {
-          console.error('Update metadata check failed:', err);
+          console.error('[Updater] Update metadata check failed:', err);
           if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send('update-error', err.message);
           }
         });
       };
 
+      autoUpdater.on('checking-for-update', () => {
+        console.log('[Updater] Event: checking-for-update');
+      });
+
       autoUpdater.on('update-available', (info) => {
+        console.log('[Updater] Event: update-available. New version:', info.version);
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-available', info.version);
         }
       });
 
       autoUpdater.on('download-progress', (progressObj) => {
+        console.log(`[Updater] Event: download-progress: ${progressObj.percent}%`);
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-progress', progressObj);
         }
       });
 
-      autoUpdater.on('update-not-available', () => {
+      autoUpdater.on('update-not-available', (info) => {
+        console.log('[Updater] Event: update-not-available. Current is latest:', info ? info.version : 'unknown');
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-not-available');
         }
       });
 
       autoUpdater.on('update-downloaded', (info) => {
+        console.log('[Updater] Event: update-downloaded. Version:', info.version);
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-downloaded');
         }
-        
-        // IMMEDIATELY QUIT AND INSTALL SILENTLY ONCE DOWNLOADED
-        // This achieves the "Discord-style" flow where clicking download icon eventually leads to auto-restart
       });
 
       autoUpdater.on('error', (err) => {
-        console.error('AutoUpdater Error:', err);
+        console.error('[Updater] Event: error. Details:', err);
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-error', err.message);
         }

@@ -52,9 +52,27 @@ export const useAppViewModel = () => {
         // Use environment variable defined at build time
         const currentVersion = (import.meta as any).env.PACKAGE_VERSION;
         
-        if (latestVersion !== currentVersion && updateStatus === 'none') {
+        console.log('[Updater] Manual Check - Current:', currentVersion, 'Latest:', latestVersion);
+
+        // Simple version comparison (only works for numeric versions like 1.10.1)
+        const isNewer = (latest: string, current: string) => {
+          const l = latest.split('.').map(Number);
+          const c = current.split('.').map(Number);
+          for (let i = 0; i < Math.max(l.length, c.length); i++) {
+            const lv = l[i] || 0;
+            const cv = c[i] || 0;
+            if (lv > cv) return true;
+            if (lv < cv) return false;
+          }
+          return false;
+        };
+        
+        if (isNewer(latestVersion, currentVersion) && updateStatus === 'none') {
+          console.log('[Updater] Manual Check - Update Available!');
           setAvailableVersion(latestVersion);
           setUpdateStatus('available');
+        } else {
+          console.log('[Updater] Manual Check - No update needed or already in progress.');
         }
       }
     } catch (err) {
