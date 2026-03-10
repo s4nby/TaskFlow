@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { X } from 'lucide-react';
 
 interface ProjectNamingModalProps {
   isOpen: boolean;
@@ -37,7 +38,10 @@ const ProjectNamingModal: React.FC<ProjectNamingModalProps> = ({ isOpen, onClose
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="quick-add-flyout glass-effect" onClick={e => e.stopPropagation()}>
+      <div className="quick-add-flyout glass-effect modal-sm" onClick={e => e.stopPropagation()}>
+        <button className="modal-close-btn" onClick={onClose} title="Close">
+          <X size={18} />
+        </button>
         <div className="flyout-header">
           <h3>Initialize Workspace</h3>
           <span className="flyout-date">Define your new project scope</span>
@@ -52,9 +56,8 @@ const ProjectNamingModal: React.FC<ProjectNamingModalProps> = ({ isOpen, onClose
             className={`flyout-input themed-field ${error ? 'error-field' : ''}`} 
           />
           {error && <div className="error-text">Project name is required</div>}
-          <div className="flyout-actions">
-            <button type="button" className="btn-cancel themed-secondary-btn" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-submit themed-primary-btn">Initialize Project</button>
+          <div className="flyout-actions centered">
+            <button type="submit" className="btn-submit themed-primary-btn full-width">Initialize Project</button>
           </div>
         </form>
       </div>

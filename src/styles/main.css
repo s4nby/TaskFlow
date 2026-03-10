@@ -615,7 +615,7 @@ body {
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
-  padding-bottom: 24px; /* Shift content slightly upward */
+  padding-bottom: 32px; /* Increased shift upward */
 }
 
 .hub-card.new-trigger svg {
@@ -623,6 +623,7 @@ body {
 }
 
 .hub-card.new-trigger:hover {
+  transform: none !important; /* Strictly no movement on hover */
   border-color: var(--accent-color);
   color: var(--text-primary);
   background: rgba(59, 130, 246, 0.05);
@@ -642,6 +643,42 @@ animation: fadeIn 0.2s ease-out;
   border: 1px solid var(--glass-border); border-radius: var(--radius-standard);
   width: 100%; max-width: 400px; padding: 24px;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.modal-sm {
+  max-width: 340px !important;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.flyout-actions.centered {
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.full-width {
+  width: 100%;
 }
 
 .themed-field {
@@ -1206,7 +1243,7 @@ animation: fadeIn 0.2s ease-out;
   align-items: center;
   justify-content: center;
   min-height: 200px;
-  padding-bottom: 120px; /* Increased shift upward from absolute center */
+  padding-bottom: 140px; /* Further increased shift upward */
 }
 
 .add-task-btn {
@@ -1223,17 +1260,16 @@ animation: fadeIn 0.2s ease-out;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 5;
-  transform: translateY(-20px); /* Permanent slight upward shift for balance */
+  margin-top: -30px; /* Use margin instead of transform for permanent nudge */
 }
 
 .add-task-btn:hover {
-  transform: scale(1.1);
   background: #2563eb;
   box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
 }
 
 .add-task-btn:active {
-  transform: scale(0.95);
+  opacity: 0.8;
 }
 
 .inline-quick-add {

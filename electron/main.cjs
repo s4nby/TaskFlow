@@ -119,11 +119,8 @@ function createWindow() {
     return false;
   });
 
-  // Hide to Tray on Minimize
-  mainWindow.on('minimize', (event) => {
-    event.preventDefault();
-    mainWindow.hide();
-  });
+  // Minimize behavior is standard (to taskbar). 
+  // No custom logic needed for 'minimize' event to achieve normal behavior.
 
   // Ensure window is shown in taskbar when restored
   mainWindow.on('show', () => {
