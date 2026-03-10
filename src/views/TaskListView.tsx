@@ -74,6 +74,85 @@ const TaskListView: React.FC<TaskListViewProps> = ({
     setNewTaskTitle('');
   };
 
+  const startEditingSubTask = (sub: SubTask) => {
+    setEditingSubTaskId(sub.id);
+    setEditingSubTaskText(sub.text);
+  };
+
+  const saveSubTaskEditing = (taskId: string) => {
+    if (editingSubTaskId && editingSubTaskText.trim()) {
+      onUpdateSubTask(taskId, editingSubTaskId, editingSubTaskText);
+      setEditingSubTaskId(null);
+    }
+  };
+
+  const toggleExpand = (taskId: string) => {
+    const next = new Set(expandedTasks);
+    if (next.has(taskId)) next.delete(taskId);
+    else next.add(taskId);
+    setExpandedTasks(next);
+  };
+
+  const handleDragStart = (id: string) => setDraggedTaskId(id);
+  
+  const handleDragOver = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!draggedTaskId || draggedTaskId === targetId) return;
+
+    // Determine if we should show merge or reorder based on drag position
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const relativeY = e.clientY - rect.top;
+    
+    // If dragging in the middle 50% of the item, consider it a merge target
+    if (relativeY > rect.height * 0.2 && relativeY < rect.height * 0.8) {
+      if (mergeTargetId !== targetId) setMergeTargetId(targetId);
+    } else {
+      if (mergeTargetId !== null) setMergeTargetId(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!draggedTaskId || draggedTaskId === targetId) {
+      setMergeTargetId(null);
+      setDraggedTaskId(null);
+      return;
+    }
+
+    if (mergeTargetId === targetId) {
+      onMergeTasks(draggedTaskId, targetId);
+    } else {
+      // Reorder logic on drop
+      const newTasks = [...tasks];
+      const draggedIdx = newTasks.findIndex(t => t.id === draggedTaskId);
+      const targetIdx = newTasks.findIndex(t => t.id === targetId);
+      
+      if (draggedIdx !== -1 && targetIdx !== -1) {
+        const [removed] = newTasks.splice(draggedIdx, 1);
+        newTasks.splice(targetIdx, 0, removed);
+        
+        // We pass the new order to the viewmodel
+        onReorderTasks(tasks[0].listId, newTasks);
+      }
+    }
+    
+    setMergeTargetId(null);
+    setDraggedTaskId(null);
+  };
+
+  const handleDragLeave = () => {
+    setMergeTargetId(null);
+  };
+
+  const getPriorityColor = (p: Priority) => {
+    switch(p) {
+      case 'high': return '#ef4444';
+      case 'medium': return '#f59e0b';
+      case 'low': return '#3b82f6';
+      default: return 'transparent';
+    }
+  };
+
   return (
     <div className="standard-page">
       <header className="header-section">
