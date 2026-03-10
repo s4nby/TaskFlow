@@ -47,8 +47,6 @@
       "verifyUpdateCodeSignature": false
     },
     "nsis": {
-      "installerIcon": "public/icon_256x256.png",
-      "uninstallerIcon": "public/icon_256x256.png",
       "oneClick": false,
       "perMachine": true,
       "allowElevation": true,
