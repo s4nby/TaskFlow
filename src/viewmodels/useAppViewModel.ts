@@ -413,8 +413,8 @@ export const useAppViewModel = () => {
         const release = await response.json();
         const latestVersion = release.tag_name.replace('v', '');
         
-        // Import packageJson dynamically to get local version
-        const { version: currentVersion } = await import('../../package.json');
+        // Use environment variable defined at build time
+        const currentVersion = (import.meta as any).env.PACKAGE_VERSION;
         
         if (latestVersion !== currentVersion && updateStatus === 'none') {
           setAvailableVersion(latestVersion);

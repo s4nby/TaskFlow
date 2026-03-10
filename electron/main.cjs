@@ -216,6 +216,9 @@ function createWindow() {
       });
 
       ipcMain.on('install-update', () => {
+        // CRITICAL: Set isQuitting to true so the window close event 
+        // isn't intercepted and redirected to tray.
+        app.isQuitting = true;
         // isSilent: true, isForceRunAfter: true
         autoUpdater.quitAndInstall(true, true);
       });
