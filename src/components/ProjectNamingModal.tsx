@@ -46,21 +46,21 @@ const ProjectNamingModal: React.FC<ProjectNamingModalProps> = ({ isOpen, type = 
           <X size={18} />
         </button>
         <div className="flyout-header">
-          <h3>{isPrompt ? 'Initialize Prompt List' : 'Initialize Workspace'}</h3>
-          <span className="flyout-date">{isPrompt ? 'Group your useful prompts' : 'Define your new project scope'}</span>
+          <h3>{isPrompt ? 'Initialize Prompt Group' : 'Initialize Workspace'}</h3>
+          <span className="flyout-date">{isPrompt ? 'Organize your administrative prompts' : 'Define your new project scope'}</span>
         </div>
         <form onSubmit={handleSubmit}>
           <input 
             ref={inputRef}
             type="text" 
-            placeholder={isPrompt ? "Prompt Category (e.g. Code Review)" : "Project Name (e.g. Q1 Marketing)"} 
+            placeholder={isPrompt ? "Prompt Group Name (e.g. System Admin)" : "Project Name (e.g. Q1 Marketing)"} 
             value={name} 
             onChange={handleChange} 
             className={`flyout-input themed-field ${error ? 'error-field' : ''}`} 
           />
-          {error && <div className="error-text">{isPrompt ? 'Prompt category name is required' : 'Project name is required'}</div>}
+          {error && <div className="error-text">{isPrompt ? 'Prompt group name is required' : 'Project name is required'}</div>}
           <div className="flyout-actions centered">
-            <button type="submit" className="btn-submit themed-primary-btn full-width">{isPrompt ? 'Initialize Prompt List' : 'Initialize Project'}</button>
+            <button type="submit" className="btn-submit themed-primary-btn full-width">{isPrompt ? 'Initialize Prompt Group' : 'Initialize Project'}</button>
           </div>
         </form>
       </div>

@@ -100,6 +100,8 @@ const App: React.FC = () => {
                     commands.setActiveListId(id);
                   }}
                   onDeleteProject={(id) => commands.deleteProject(id)}
+                  onRenameProject={commands.updateProjectName}
+                  onTogglePreference={commands.toggleProjectPreference}
                 />
               );
             case 'important':
@@ -116,6 +118,8 @@ const App: React.FC = () => {
                     commands.setActiveListId(id);
                   }}
                   onDeleteProject={(id) => commands.deleteProject(id)}
+                  onRenameProject={commands.updateProjectName}
+                  onTogglePreference={commands.toggleProjectPreference}
                   hideActions={true}
                 />
               );

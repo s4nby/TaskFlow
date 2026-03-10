@@ -133,7 +133,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         {projects.map(renderListItem)}
 
         <div className="sidebar-section-header">
-          {isExpanded ? 'USEFUL PROMPTS' : <div className="divider" />}
+          {isExpanded ? 'PROMPT MANAGER' : <div className="divider" />}
         </div>
         {prompts.map(renderListItem)}
       </div>
