@@ -50,7 +50,9 @@ const HubView: React.FC<HubViewProps> = ({
         
         {isPrompt ? (
           <>
-            <h3 style={{ fontSize: '0.85rem', marginBottom: '2px' }}>{projTasks.length > 0 ? (projTasks[0].title || proj.name) : proj.name}</h3>
+            <h3 style={{ fontSize: '0.85rem', marginBottom: '2px' }}>
+              {projTasks.length > 0 ? (projTasks[0].title || proj.name) : proj.name}
+            </h3>
             {firstTaskText && (
               <p className="prompt-content" style={{ 
                 fontSize: '0.65rem', 

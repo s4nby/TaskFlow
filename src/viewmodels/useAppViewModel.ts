@@ -35,15 +35,17 @@ export const useAppViewModel = () => {
   const ipcRenderer = window.require ? window.require('electron').ipcRenderer : null;
 
   const checkForUpdates = async () => {
+    logInfo('Update check triggered. Status: ' + updateStatus);
+    
     // 1. Native Check (Main Process)
     if (ipcRenderer) {
+      logInfo('Sending IPC: check-for-updates');
       ipcRenderer.send('check-for-updates');
     }
 
     // 2. Fallback Manual Check (GitHub API)
-    // This ensures that even if legacy versions are pointing to the wrong update server,
-    // the UI will still detect the version mismatch and show the indicator.
     try {
+      logInfo('Fetching latest release from GitHub API...');
       const response = await fetch('https://api.github.com/repos/s4nby/TaskFlow/releases/latest');
       if (response.ok) {
         const release = await response.json();
@@ -52,7 +54,7 @@ export const useAppViewModel = () => {
         // Use environment variable defined at build time
         const currentVersion = (import.meta as any).env.PACKAGE_VERSION;
         
-        console.log('[Updater] Manual Check - Current:', currentVersion, 'Latest:', latestVersion);
+        logInfo(`Manual Check - Current: ${currentVersion}, Latest: ${latestVersion}`);
 
         // Simple version comparison (only works for numeric versions like 1.10.1)
         const isNewer = (latest: string, current: string) => {
@@ -67,18 +69,36 @@ export const useAppViewModel = () => {
           return false;
         };
         
-        if (isNewer(latestVersion, currentVersion) && updateStatus === 'none') {
-          console.log('[Updater] Manual Check - Update Available!');
+        const newer = isNewer(latestVersion, currentVersion);
+        logInfo(`Is newer: ${newer}, Update status: ${updateStatus}`);
+
+        if (newer && updateStatus === 'none') {
+          logInfo('Manual Check - Update Available! Showing indicator.');
           setAvailableVersion(latestVersion);
           setUpdateStatus('available');
         } else {
-          console.log('[Updater] Manual Check - No update needed or already in progress.');
+          logInfo('Manual Check - No newer version found or check in progress.');
         }
+      } else {
+        logError('GitHub API check failed with status: ' + response.status);
       }
     } catch (err) {
-      console.error('Manual Update Check Failed:', err);
+      logError('Manual Update Check Failed: ' + err);
     }
   };
+
+  // Helper for consistent logging
+  function logInfo(msg: string) {
+    console.log('[Updater UI] ' + msg);
+  }
+  function logError(msg: string) {
+    console.error('[Updater UI] ' + msg);
+  }
+
+  // Expose for dev console testing
+  useEffect(() => {
+    (window as any).forceUpdateCheck = checkForUpdates;
+  }, []);
 
   useEffect(() => {
     const initTheme = async () => {

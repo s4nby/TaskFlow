@@ -161,10 +161,32 @@ function createWindow() {
       // Ensure full silent update
       autoUpdater.autoInstallOnAppQuit = true;
 
+    // Defer update check to avoid blocking startup
+    if (process.env.NODE_ENV !== 'development') {
+      const { autoUpdater } = require('electron-updater');
+      const log = require('electron-log');
+      
+      autoUpdater.logger = log;
+      autoUpdater.logger.transports.file.level = 'info';
+      
+      log.info('[Updater] Initializing autoUpdater. App version:', app.getVersion());
+
+      autoUpdater.setFeedURL({
+        provider: 'github',
+        owner: 's4nby',
+        repo: 'TaskFlow'
+      });
+      
+      autoUpdater.autoDownload = false; 
+      autoUpdater.allowDowngrade = false;
+      autoUpdater.autoInstallOnAppQuit = true;
+
       const checkUpdates = () => {
-        console.log('[Updater] checkUpdates() called');
-        autoUpdater.checkForUpdates().catch(err => {
-          console.error('[Updater] Update metadata check failed:', err);
+        log.info('[Updater] checkUpdates() explicitly called');
+        autoUpdater.checkForUpdates().then((result) => {
+          log.info('[Updater] checkForUpdates promise resolved. UpdateInfo:', result ? result.updateInfo.version : 'null');
+        }).catch(err => {
+          log.error('[Updater] checkForUpdates error:', err);
           if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send('update-error', err.message);
           }
@@ -172,39 +194,42 @@ function createWindow() {
       };
 
       autoUpdater.on('checking-for-update', () => {
-        console.log('[Updater] Event: checking-for-update');
+        log.info('[Updater] Event: checking-for-update');
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('update-checking');
+        }
       });
 
       autoUpdater.on('update-available', (info) => {
-        console.log('[Updater] Event: update-available. New version:', info.version);
+        log.info('[Updater] Event: update-available. New version:', info.version);
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-available', info.version);
         }
       });
 
       autoUpdater.on('download-progress', (progressObj) => {
-        console.log(`[Updater] Event: download-progress: ${progressObj.percent}%`);
+        log.info(`[Updater] Event: download-progress: ${progressObj.percent}%`);
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-progress', progressObj);
         }
       });
 
       autoUpdater.on('update-not-available', (info) => {
-        console.log('[Updater] Event: update-not-available. Current is latest:', info ? info.version : 'unknown');
+        log.info('[Updater] Event: update-not-available. Latest is:', info ? info.version : 'unknown');
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-not-available');
         }
       });
 
       autoUpdater.on('update-downloaded', (info) => {
-        console.log('[Updater] Event: update-downloaded. Version:', info.version);
+        log.info('[Updater] Event: update-downloaded. Version:', info.version);
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-downloaded');
         }
       });
 
       autoUpdater.on('error', (err) => {
-        console.error('[Updater] Event: error. Details:', err);
+        log.error('[Updater] Event: error. Details:', err);
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-error', err.message);
         }
@@ -212,6 +237,7 @@ function createWindow() {
 
       // IPC to trigger download/install
       ipcMain.on('check-for-updates', () => {
+        log.info('[Updater] IPC received: check-for-updates');
         checkUpdates();
       });
 
