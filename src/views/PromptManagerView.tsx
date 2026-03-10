@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  Trash2, Pencil, Star, Plus, Copy, Check, ChevronDown, ChevronRight
+  Trash2, Pencil, Star, Plus, Copy, Check
 } from 'lucide-react';
 import type { Task } from '../models/types';
 import AutoExpandingTextarea from '../components/AutoExpandingTextarea';
@@ -144,12 +144,6 @@ const PromptManagerView: React.FC<PromptManagerViewProps> = ({
         {prompts.map(prompt => (
           <div key={prompt.id} className="task-item-container">
             <div className="task-item themed-border" style={{ borderLeft: '4px solid var(--accent-color)', padding: '12px 16px' }}>
-              <div className="task-left-controls">
-                <button className="chevron-trigger" onClick={() => toggleExpand(prompt.id)} title="View Prompt Content">
-                  {expandedPrompts.has(prompt.id) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                </button>
-              </div>
-
               <div className="task-content" style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: '4px', overflow: 'hidden' }}>
                 {editingId === prompt.id ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
@@ -176,7 +170,7 @@ const PromptManagerView: React.FC<PromptManagerViewProps> = ({
                   <>
                     <div 
                       style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                      onClick={() => startEditing(prompt)}
+                      onClick={() => toggleExpand(prompt.id)}
                     >
                       <span className="prompt-label" style={{ fontSize: '1rem', padding: '2px 10px' }}>{prompt.title}</span>
                       {!expandedPrompts.has(prompt.id) && (
