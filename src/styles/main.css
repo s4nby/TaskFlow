@@ -619,6 +619,21 @@ body {
   font-family: inherit;
 }
 
+.prompt-label {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 4px 12px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .copy-success {
   color: #10b981 !important;
   display: flex;
@@ -909,6 +924,9 @@ animation: fadeIn 0.2s ease-out;
   margin: 0;
   font-size: 1.1rem;
   font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .hub-card p {

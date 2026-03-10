@@ -291,7 +291,11 @@ const TaskListView: React.FC<TaskListViewProps> = ({
                   </>
                 ) : (
                   <>
-                    {isPrompt && task.title && <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '12px' }}>{task.title}</div>}
+                    {isPrompt && task.title && (
+                      <div style={{ marginBottom: '12px' }}>
+                        <span className="prompt-label" style={{ maxWidth: '100%' }}>{task.title}</span>
+                      </div>
+                    )}
                     <div className={`${!isPrompt ? 'task-text' : ''} ${task.completed ? 'completed' : ''} ${isPrompt ? 'prompt-content' : ''}`} style={isPrompt ? { marginTop: '4px' } : {}}>
                       {isPrompt ? renderFormattedPrompt(task.text) : task.text}
                     </div>
