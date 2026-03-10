@@ -144,13 +144,15 @@ const App: React.FC = () => {
                   filterDate={state.filterDate}
                   newTaskText={state.newTaskText}
                   onSetNewTaskText={commands.setNewTaskText}
-                  onAddTask={(e) => {
+                  onAddTask={(e, title) => {
                     e.preventDefault();
-                    commands.addTask();
+                    commands.addTask(undefined, undefined, 'low', title);
                   }}
                   onToggleTask={(id) => commands.toggleTask(id)}
                   onDeleteTask={(id) => commands.deleteTask(id)}
-                  onUpdateTask={(id, text) => commands.updateTask(id, text)}
+                  onUpdateTask={(id, text, title) => {
+                    commands.updateTask(id, text, title);
+                  }}
                   onClearFilter={() => commands.setFilterDate(null)}
                   hideQuickAdd={state.activeListId === 'important'}
                   isPreferred={activeProject?.isPreferred}

@@ -12,10 +12,10 @@ interface TaskListViewProps {
   filterDate: string | null;
   newTaskText: string;
   onSetNewTaskText: (text: string) => void;
-  onAddTask: (e: React.FormEvent) => void;
+  onAddTask: (e: React.FormEvent, title?: string) => void;
   onToggleTask: (id: string) => void;
   onDeleteTask: (id: string) => void;
-  onUpdateTask: (id: string, text: string) => void;
+  onUpdateTask: (id: string, text: string, title?: string) => void;
   onClearFilter: () => void;
   hideQuickAdd?: boolean;
   isPreferred?: boolean;
@@ -38,6 +38,8 @@ const TaskListView: React.FC<TaskListViewProps> = ({
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [editingTitle, setEditingTitle] = useState('');
+  const [newTaskTitle, setNewTaskTitle] = useState('');
   const [editingSubTaskId, setEditingSubTaskId] = useState<string | null>(null);
   const [editingSubTaskText, setEditingSubTaskText] = useState('');
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
@@ -49,97 +51,27 @@ const TaskListView: React.FC<TaskListViewProps> = ({
   const startEditing = (task: Task) => {
     setEditingId(task.id);
     setEditingText(task.text);
+    setEditingTitle(task.title || '');
   };
 
   const saveEditing = () => {
-    if (editingId && editingText.trim()) {
-      onUpdateTask(editingId, editingText);
+    if (editingId) {
+      if (isPrompt && !editingTitle.trim()) return;
+      if (!isPrompt && !editingText.trim()) return;
+      
+      onUpdateTask(editingId, editingText, isPrompt ? editingTitle : undefined);
       setEditingId(null);
     }
   };
 
-  const startEditingSubTask = (sub: SubTask) => {
-    setEditingSubTaskId(sub.id);
-    setEditingSubTaskText(sub.text);
-  };
-
-  const saveSubTaskEditing = (taskId: string) => {
-    if (editingSubTaskId && editingSubTaskText.trim()) {
-      onUpdateSubTask(taskId, editingSubTaskId, editingSubTaskText);
-      setEditingSubTaskId(null);
-    }
-  };
-
-  const toggleExpand = (taskId: string) => {
-    const next = new Set(expandedTasks);
-    if (next.has(taskId)) next.delete(taskId);
-    else next.add(taskId);
-    setExpandedTasks(next);
-  };
-
-  const handleDragStart = (id: string) => setDraggedTaskId(id);
-  
-  const handleDragOver = (e: React.DragEvent, targetId: string) => {
-    e.preventDefault();
-    if (!draggedTaskId || draggedTaskId === targetId) return;
-
-    // Determine if we should show merge or reorder based on drag position
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const relativeY = e.clientY - rect.top;
-    
-    // If dragging in the middle 50% of the item, consider it a merge target
-    if (relativeY > rect.height * 0.2 && relativeY < rect.height * 0.8) {
-      if (mergeTargetId !== targetId) setMergeTargetId(targetId);
-    } else {
-      if (mergeTargetId !== null) setMergeTargetId(null);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent, targetId: string) => {
-    e.preventDefault();
-    if (!draggedTaskId || draggedTaskId === targetId) {
-      setMergeTargetId(null);
-      setDraggedTaskId(null);
+  const handleAddTask = (e: React.FormEvent) => {
+    if (isPrompt && !newTaskTitle.trim()) {
+      e.preventDefault();
       return;
     }
-
-    if (mergeTargetId === targetId) {
-      onMergeTasks(draggedTaskId, targetId);
-    } else {
-      // Reorder logic on drop
-      const newTasks = [...tasks];
-      const draggedIdx = newTasks.findIndex(t => t.id === draggedTaskId);
-      const targetIdx = newTasks.findIndex(t => t.id === targetId);
-      
-      if (draggedIdx !== -1 && targetIdx !== -1) {
-        const [removed] = newTasks.splice(draggedIdx, 1);
-        newTasks.splice(targetIdx, 0, removed);
-        
-        // We pass the new order to the viewmodel
-        onReorderTasks(tasks[0].listId, newTasks);
-      }
-    }
-    
-    setMergeTargetId(null);
-    setDraggedTaskId(null);
-  };
-
-  const handleDragLeave = () => {
-    setMergeTargetId(null);
-  };
-
-  const getPriorityColor = (p: Priority) => {
-    switch(p) {
-      case 'high': return '#ef4444';
-      case 'medium': return '#f59e0b';
-      case 'low': return '#3b82f6';
-      default: return 'transparent';
-    }
-  };
-
-  const handleAddTask = (e: React.FormEvent) => {
-    onAddTask(e);
+    onAddTask(e, isPrompt ? newTaskTitle : undefined);
     setIsAddingTask(false);
+    setNewTaskTitle('');
   };
 
   return (
@@ -190,26 +122,41 @@ const TaskListView: React.FC<TaskListViewProps> = ({
               <div className={`task-checkbox ${task.completed ? 'completed' : ''}`} onClick={() => onToggleTask(task.id)}>
                 {task.completed && <Check size={12} color="white" />}
               </div>
-              <div className="task-content" style={{ display: 'flex', flex: 1, alignItems: 'center', gap: '8px' }}>
+              <div className="task-content" style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: '4px', padding: '4px 0' }}>
                 {editingId === task.id ? (
-                  <AutoExpandingTextarea 
-                    className={`quick-add-input ${isPrompt ? 'prompt-content' : ''}`} 
-                    style={{ padding: '4px 8px', fontSize: '0.9rem' }}
-                    value={editingText} 
-                    onChange={(e) => setEditingText(e.target.value)}
-                    onBlur={saveEditing}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        saveEditing();
-                      }
-                      if (e.key === 'Escape') setEditingId(null);
-                    }}
-                    autoFocus
-                  />
+                  <>
+                    {isPrompt && (
+                      <input 
+                        type="text"
+                        className="quick-add-input"
+                        style={{ padding: '4px 8px', fontSize: '1rem', fontWeight: 700, marginBottom: '4px', borderBottom: '1px solid var(--glass-border)' }}
+                        placeholder="Prompt title..."
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                        autoFocus
+                      />
+                    )}
+                    <AutoExpandingTextarea 
+                      className={`quick-add-input ${isPrompt ? 'prompt-content' : ''}`} 
+                      style={{ padding: '4px 8px', fontSize: '0.9rem' }}
+                      placeholder={isPrompt ? "Prompt body content..." : "Task description..."}
+                      value={editingText} 
+                      onChange={(e) => setEditingText(e.target.value)}
+                      onBlur={saveEditing}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          saveEditing();
+                        }
+                        if (e.key === 'Escape') setEditingId(null);
+                      }}
+                      autoFocus={!isPrompt}
+                    />
+                  </>
                 ) : (
                   <>
-                    <span className={`task-text ${task.completed ? 'completed' : ''} ${isPrompt ? 'prompt-content' : ''}`}>{task.text}</span>
+                    {isPrompt && task.title && <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>{task.title}</div>}
+                    <div className={`task-text ${task.completed ? 'completed' : ''} ${isPrompt ? 'prompt-content' : ''}`} style={isPrompt ? { marginTop: '4px' } : {}}>{task.text}</div>
                     {task.dueDate && <span className="task-due-date themed-text-accent" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={10} />{task.dueDate}</span>}
                   </>
                 )}
@@ -321,15 +268,28 @@ const TaskListView: React.FC<TaskListViewProps> = ({
               <Plus size={24} />
             </button>
           ) : (
-            <form className="quick-add-container inline-quick-add" onSubmit={handleAddTask}>
-              <div className="input-group themed-input-container">
+            <form className="quick-add-container inline-quick-add" style={{ flexDirection: 'column' }} onSubmit={handleAddTask}>
+              {isPrompt && (
+                <div className="input-group themed-input-container" style={{ borderBottom: '1px solid var(--glass-border)', borderRadius: 'var(--radius-standard) var(--radius-standard) 0 0' }}>
+                  <input 
+                    type="text"
+                    className="quick-add-input"
+                    style={{ padding: '12px 16px', fontSize: '1rem', fontWeight: 700 }}
+                    placeholder="Prompt title (required)..."
+                    value={newTaskTitle}
+                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+              )}
+              <div className="input-group themed-input-container" style={isPrompt ? { borderRadius: '0 0 var(--radius-standard) var(--radius-standard)' } : {}}>
                 <AutoExpandingTextarea 
                   className={`quick-add-input ${isPrompt ? 'prompt-content' : ''}`} 
-                  placeholder={isPrompt ? "Paste or type your prompt here..." : "What needs to be done?"} 
+                  placeholder={isPrompt ? "Paste or type your prompt body content here..." : "What needs to be done?"} 
                   value={newTaskText} 
                   onChange={(e) => onSetNewTaskText(e.target.value)}
                   onBlur={() => {
-                    if (!newTaskText.trim()) setIsAddingTask(false);
+                    if (!newTaskText.trim() && !newTaskTitle.trim()) setIsAddingTask(false);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -338,7 +298,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({
                     }
                     if (e.key === 'Escape') setIsAddingTask(false);
                   }}
-                  autoFocus
+                  autoFocus={!isPrompt}
                 />
                 <button type="submit" style={{ display: 'none' }} />
               </div>

@@ -274,9 +274,9 @@ export const useAppViewModel = () => {
     return days;
   }, [viewDate, tasks, projectLists, activeListId]);
 
-  const addTask = async (text?: string, dueDate?: string, priority: Priority = 'low') => {
+  const addTask = async (text?: string, dueDate?: string, priority: Priority = 'low', title?: string) => {
     const taskText = text || newTaskText;
-    if (!taskText.trim()) return;
+    if (!taskText.trim() && !title?.trim()) return;
 
     const taskDueDate = dueDate || (filterDate ? filterDate : undefined);
     
@@ -286,6 +286,7 @@ export const useAppViewModel = () => {
     const newTask: Task = {
       id: Date.now().toString(),
       text: taskText,
+      title: title,
       completed: false,
       listId: activeListId === 'hub' || activeListId === 'calendar' ? 'todo' : activeListId,
       dueDate: taskDueDate,
@@ -337,8 +338,8 @@ export const useAppViewModel = () => {
     setTasks(prev => prev.filter(t => t.id !== id));
   };
 
-  const updateTask = (id: string, text: string) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, text: text.trim() } : t));
+  const updateTask = (id: string, text: string, title?: string) => {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, text: text.trim(), title: title !== undefined ? title.trim() : t.title } : t));
   };
 
   const setTaskPriority = (id: string, priority: Priority) => {

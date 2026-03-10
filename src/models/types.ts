@@ -9,13 +9,15 @@ export interface SubTask {
 export interface Task {
   id: string;
   text: string;
+  title?: string; // For prompts
   completed: boolean;
   listId: string;
-  dueDate?: string; // ISO YYYY-MM-DD
+  dueDate?: string;
   priority: Priority;
   index: number;
   subTasks: SubTask[];
 }
+
 
 export interface ProjectList {
   id: string;

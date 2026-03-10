@@ -47,20 +47,29 @@ const HubView: React.FC<HubViewProps> = ({
             <Trash2 size={12} />
           </button>
         </div>
-        <h3 style={{ fontSize: '0.85rem' }}>{proj.name}</h3>
-        {isPrompt && firstTaskText ? (
-          <p style={{ 
-            fontSize: '0.7rem', 
-            color: 'var(--text-secondary)', 
-            whiteSpace: 'nowrap', 
-            overflow: 'hidden', 
-            textOverflow: 'ellipsis',
-            marginTop: '2px'
-          }}>
-            {firstTaskText}
-          </p>
+        
+        {isPrompt ? (
+          <>
+            <h3 style={{ fontSize: '0.85rem', marginBottom: '2px' }}>{projTasks.length > 0 ? (projTasks[0].title || proj.name) : proj.name}</h3>
+            {firstTaskText && (
+              <p className="prompt-content" style={{ 
+                fontSize: '0.65rem', 
+                color: 'var(--text-secondary)', 
+                whiteSpace: 'nowrap', 
+                overflow: 'hidden', 
+                textOverflow: 'ellipsis',
+                opacity: 0.7,
+                marginTop: '2px'
+              }}>
+                {firstTaskText.split('\n')[0]}
+              </p>
+            )}
+          </>
         ) : (
-          <p style={{ fontSize: '0.7rem' }}>{projTasks.length} active items</p>
+          <>
+            <h3 style={{ fontSize: '0.85rem' }}>{proj.name}</h3>
+            <p style={{ fontSize: '0.7rem' }}>{projTasks.length} active items</p>
+          </>
         )}
         <ArrowRight className="hub-card-arrow" size={12} />
       </div>
