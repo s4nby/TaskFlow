@@ -25,20 +25,18 @@ if (!gotLock) {
 
 function createTray() {
   try {
-    // icon_16x16.png was copied to public/ and should land in dist/ on build
+    // icon_16x16.png in newicons/ folder
     let iconPath = process.env.NODE_ENV === 'development' 
-      ? path.join(__dirname, '../public/icon_16x16.png')
-      : path.join(__dirname, '../dist/icon_16x16.png');
+      ? path.join(__dirname, '../newicons/icon_16x16.png')
+      : path.join(__dirname, '../newicons/icon_16x16.png');
     
     // Fallback chain
     if (!fs.existsSync(iconPath)) {
-      // Try vite.svg
-      const svgPath = process.env.NODE_ENV === 'development'
-        ? path.join(__dirname, '../public/vite.svg')
-        : path.join(__dirname, '../dist/vite.svg');
+      // Try 32x32 from newicons
+      const fallbackPath = path.join(__dirname, '../newicons/icon_32x32.png');
       
-      if (fs.existsSync(svgPath)) {
-        iconPath = svgPath;
+      if (fs.existsSync(fallbackPath)) {
+        iconPath = fallbackPath;
       } else if (process.platform === 'win32') {
         // Ultimate Windows fallback: Use the icon embedded in the .exe
         iconPath = process.execPath;

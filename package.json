@@ -27,6 +27,7 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
+      "newicons/**/*",
       "package.json",
       "!dist/**/*.map",
       "!dist-electron",
@@ -35,7 +36,7 @@
     ],
     "asar": true,
     "win": {
-      "icon": "public/icon_256x256.png",
+      "icon": "newicons/icon_256x256.png",
       "target": [
         {
           "target": "nsis",

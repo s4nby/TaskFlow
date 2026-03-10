@@ -34,6 +34,34 @@ export const useAppViewModel = () => {
   // @ts-ignore
   const ipcRenderer = window.require ? window.require('electron').ipcRenderer : null;
 
+  const checkForUpdates = async () => {
+    // 1. Native Check (Main Process)
+    if (ipcRenderer) {
+      ipcRenderer.send('check-for-updates');
+    }
+
+    // 2. Fallback Manual Check (GitHub API)
+    // This ensures that even if legacy versions are pointing to the wrong update server,
+    // the UI will still detect the version mismatch and show the indicator.
+    try {
+      const response = await fetch('https://api.github.com/repos/s4nby/TaskFlow/releases/latest');
+      if (response.ok) {
+        const release = await response.json();
+        const latestVersion = release.tag_name.replace('v', '');
+        
+        // Use environment variable defined at build time
+        const currentVersion = (import.meta as any).env.PACKAGE_VERSION;
+        
+        if (latestVersion !== currentVersion && updateStatus === 'none') {
+          setAvailableVersion(latestVersion);
+          setUpdateStatus('available');
+        }
+      }
+    } catch (err) {
+      console.error('Manual Update Check Failed:', err);
+    }
+  };
+
   useEffect(() => {
     const initTheme = async () => {
       if (ipcRenderer) {

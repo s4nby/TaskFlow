@@ -41,15 +41,27 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="list-container">
         <div className={`list-item ${activeListId === 'hub' ? 'active' : ''}`} onClick={() => onNavigate('hub')}>
           <div className="list-icon"><Layout size={18} /></div>
-          {isExpanded && <span className="list-name">Dashboard</span>}
+          {isExpanded && (
+            <div className="list-content">
+              <span className="list-name">Dashboard</span>
+            </div>
+          )}
         </div>
         <div className={`list-item ${activeListId === 'todo' ? 'active' : ''}`} onClick={() => onNavigate('todo')}>
           <div className="list-icon"><List size={18} /></div>
-          {isExpanded && <span className="list-name">Quick ToDoList</span>}
+          {isExpanded && (
+            <div className="list-content">
+              <span className="list-name">Quick ToDoList</span>
+            </div>
+          )}
         </div>
         <div className={`list-item ${activeListId === 'important' ? 'active' : ''}`} onClick={() => onNavigate('important')}>
           <div className="list-icon"><Star size={18} /></div>
-          {isExpanded && <span className="list-name">Favorites</span>}
+          {isExpanded && (
+            <div className="list-content">
+              <span className="list-name">Favorites</span>
+            </div>
+          )}
         </div>
         
         <div className="sidebar-section-header">
@@ -80,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <span className="list-name" style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{project.name}</span>
+                  <span className="list-name">{project.name}</span>
                 )}
               </div>
             )}

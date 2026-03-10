@@ -207,9 +207,9 @@ body {
   cursor: pointer;
   transition: all 0.2s;
   color: var(--text-secondary);
-  white-space: nowrap;
   font-size: 0.9rem;
   border-left: 3px solid transparent;
+  min-width: 0;
 }
 
 .list-item:hover, .list-item.active {
@@ -238,6 +238,7 @@ body {
   gap: 8px;
   overflow: hidden;
   height: 100%;
+  min-width: 0; /* Allow container to shrink for ellipsis */
 }
 
 .list-name {
@@ -247,6 +248,8 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .collapsed .list-name {
