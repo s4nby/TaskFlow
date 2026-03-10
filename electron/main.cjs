@@ -144,26 +144,6 @@ function createWindow() {
     // Defer update check to avoid blocking startup
     if (process.env.NODE_ENV !== 'development') {
       const { autoUpdater } = require('electron-updater');
-      
-      autoUpdater.logger = require('electron-log');
-      autoUpdater.logger.transports.file.level = 'info';
-      
-      // Explicitly set feed URL to override any baked-in generic providers from old builds
-      autoUpdater.setFeedURL({
-        provider: 'github',
-        owner: 's4nby',
-        repo: 'TaskFlow'
-      });
-      
-      autoUpdater.autoDownload = false; // Keep false to control download trigger
-      autoUpdater.allowDowngrade = false;
-
-      // Ensure full silent update
-      autoUpdater.autoInstallOnAppQuit = true;
-
-    // Defer update check to avoid blocking startup
-    if (process.env.NODE_ENV !== 'development') {
-      const { autoUpdater } = require('electron-updater');
       const log = require('electron-log');
       
       autoUpdater.logger = log;
