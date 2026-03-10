@@ -331,6 +331,10 @@ body {
   opacity: 0.6;
 }
 
+.hub-card:hover .entity-delete-trigger {
+  opacity: 0.6;
+}
+
 .search-overlay {
   position: fixed;
   top: 0;
@@ -679,28 +683,24 @@ body {
 }
 
 .hub-card.new-trigger {
-  border: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.03);
-  flex-direction: row;
+  border: 1px dashed var(--glass-border);
+  background: rgba(255, 255, 255, 0.01);
+  display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
-  height: 32px;
-  padding: 0 14px;
-  gap: 8px;
-  margin-bottom: 16px;
-  width: fit-content;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  cursor: pointer;
+  min-height: 85px;
+  border-radius: 10px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hub-card.new-trigger:hover {
-  transform: translateY(-1px) !important;
+  transform: translateY(-2px) !important;
   border-color: var(--accent-color);
   color: var(--accent-color);
-  background: rgba(59, 130, 246, 0.08);
+  background: rgba(59, 130, 246, 0.05);
+  border-style: solid;
 }
 
 .modal-overlay {

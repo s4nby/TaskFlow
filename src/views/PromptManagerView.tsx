@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Trash2, Pencil, Star, Plus, Copy, Check, ChevronDown, ChevronRight
 } from 'lucide-react';
@@ -26,6 +26,28 @@ const PromptManagerView: React.FC<PromptManagerViewProps> = ({
   const [newTitle, setNewTitle] = useState('');
   const [newText, setNewText] = useState('');
   const [expandedPrompts, setExpandedPrompts] = useState<Set<string>>(new Set());
+  
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isAddingPrompt && formRef.current && !formRef.current.contains(event.target as Node)) {
+        // Only close if fields are empty to prevent accidental loss of content
+        if (!newTitle.trim() && !newText.trim()) {
+          setIsAddingPrompt(false);
+          setNewTitle('');
+          setNewText('');
+        }
+      }
+    };
+
+    if (isAddingPrompt) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isAddingPrompt, newTitle, newText]);
 
   const handleCreatePrompt = (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,7 +174,10 @@ const PromptManagerView: React.FC<PromptManagerViewProps> = ({
                   </div>
                 ) : (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div 
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                      onClick={() => startEditing(prompt)}
+                    >
                       <span className="prompt-label" style={{ fontSize: '1rem', padding: '2px 10px' }}>{prompt.title}</span>
                       {!expandedPrompts.has(prompt.id) && (
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: 0.6 }}>
@@ -199,7 +224,12 @@ const PromptManagerView: React.FC<PromptManagerViewProps> = ({
             <Plus size={24} />
           </button>
         ) : (
-          <form className="quick-add-container inline-quick-add" style={{ flexDirection: 'column' }} onSubmit={handleCreatePrompt}>
+          <form 
+            ref={formRef}
+            className="quick-add-container inline-quick-add" 
+            style={{ flexDirection: 'column' }} 
+            onSubmit={handleCreatePrompt}
+          >
             <div className="input-group themed-input-container" style={{ borderBottom: '1px solid var(--glass-border)', borderRadius: 'var(--radius-standard) var(--radius-standard) 0 0' }}>
               <input 
                 type="text"
@@ -208,6 +238,10 @@ const PromptManagerView: React.FC<PromptManagerViewProps> = ({
                 placeholder="Prompt title (required)..."
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleCreatePrompt(e as any);
+                  if (e.key === 'Escape') setIsAddingPrompt(false);
+                }}
                 autoFocus
               />
             </div>
@@ -219,16 +253,13 @@ const PromptManagerView: React.FC<PromptManagerViewProps> = ({
                 value={newText} 
                 onChange={(e) => setNewText(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.ctrlKey) {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
                     handleCreatePrompt(e as any);
                   }
                   if (e.key === 'Escape') setIsAddingPrompt(false);
                 }}
               />
-            </div>
-            <div style={{ marginTop: '12px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button type="button" className="themed-secondary-btn" onClick={() => setIsAddingPrompt(false)} style={{ padding: '6px 16px' }}>Cancel</button>
-              <button type="submit" className="themed-primary-btn" disabled={!newTitle.trim()} style={{ padding: '6px 16px' }}>Add Prompt</button>
             </div>
           </form>
         )}

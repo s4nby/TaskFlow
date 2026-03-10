@@ -344,7 +344,6 @@ export const useAppViewModel = () => {
       type
     };
     setProjectLists(prev => [...prev, newProject]);
-    setActiveListId(newProject.id);
   };
 
   const generateAIProject = async (name: string, tasksToCreate: { text: string; priority: Priority; subTasks?: string[] }[]) => {
@@ -378,7 +377,6 @@ export const useAppViewModel = () => {
 
     setProjectLists(prev => [...prev, newProject]);
     setTasks(prev => [...prev, ...newTasks]);
-    setActiveListId(projectId);
   };
 
   const deleteProject = async (id: string) => {

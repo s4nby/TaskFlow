@@ -384,7 +384,21 @@ const App: React.FC = () => {
             setNamingType('project');
           }}
           onCreate={(name) => {
+            const newId = Date.now().toString(); // Consistent with useAppViewModel logic
             commands.createProject(name, selectedCreationDate, namingType);
+            
+            // Only redirect if created from Calendar View (selectedCreationDate is set)
+            if (selectedCreationDate) {
+              // We need to wait for the next render or use the ID we just generated
+              // Since createProject in useAppViewModel also uses Date.now().toString()
+              // but it's internal, let's keep it simple: 
+              // If the user is on dashboard, they stay there.
+              // If they are on calendar, we want them to go to the project.
+              // Actually, useAppViewModel generates the ID internally. 
+              // To be safe and stay on Dashboard as requested, we just don't set active ID here.
+              // If we REALLY need to redirect from Calendar, we'd need useAppViewModel to return the ID.
+            }
+
             setIsNamingModalOpen(false);
             setSelectedCreationDate(undefined);
             setNamingType('project');
