@@ -519,6 +519,7 @@ body {
   flex-direction: column;
   gap: 6px;
   width: 100%;
+  padding-bottom: 80px;
 }
 
 .task-item.themed-border {
@@ -1211,7 +1212,7 @@ animation: fadeIn 0.2s ease-out;
 .add-task-trigger-container {
   display: flex;
   justify-content: center;
-  padding: 24px 0;
+  padding: 24px 0 40px 0;
   width: 100%;
 }
 
@@ -1237,7 +1238,6 @@ animation: fadeIn 0.2s ease-out;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 5;
-  margin-top: -30px; /* Use margin instead of transform for permanent nudge */
 }
 
 .add-task-btn:hover {
