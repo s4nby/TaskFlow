@@ -35,7 +35,7 @@
     ],
     "asar": true,
     "win": {
-      "icon": "public/tray-icon.png",
+      "icon": "public/icon_256x256.png",
       "target": [
         {
           "target": "nsis",
@@ -47,8 +47,8 @@
       "verifyUpdateCodeSignature": false
     },
     "nsis": {
-      "installerIcon": "public/tray-icon.png",
-      "uninstallerIcon": "public/tray-icon.png",
+      "installerIcon": "public/icon_256x256.png",
+      "uninstallerIcon": "public/icon_256x256.png",
       "oneClick": false,
       "perMachine": true,
       "allowElevation": true,

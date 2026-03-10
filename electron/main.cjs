@@ -25,10 +25,10 @@ if (!gotLock) {
 
 function createTray() {
   try {
-    // tray-icon.png was copied to public/ and should land in dist/ on build
+    // icon_16x16.png was copied to public/ and should land in dist/ on build
     let iconPath = process.env.NODE_ENV === 'development' 
-      ? path.join(__dirname, '../public/tray-icon.png')
-      : path.join(__dirname, '../dist/tray-icon.png');
+      ? path.join(__dirname, '../public/icon_16x16.png')
+      : path.join(__dirname, '../dist/icon_16x16.png');
     
     // Fallback chain
     if (!fs.existsSync(iconPath)) {
