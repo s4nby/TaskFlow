@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, FolderKanban, Trash2, ArrowRight, Star, Scroll } from 'lucide-react';
+import { Plus, FolderKanban, Trash2, ArrowRight, Star, Scroll, Pencil } from 'lucide-react';
 import type { ProjectList, Task } from '../models/types';
 
 interface HubViewProps {
