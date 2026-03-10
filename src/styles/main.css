@@ -592,8 +592,39 @@ body {
   font-family: 'Fira Code', 'Fira Mono', monospace !important;
   white-space: pre-wrap !important;
   word-break: break-word;
-  line-height: 1.5;
+  line-height: 1.7;
   font-variant-ligatures: contextual;
+  letter-spacing: -0.2px;
+}
+
+.prompt-body-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.prompt-header-text {
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+  display: block;
+}
+
+.prompt-inline-code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+.copy-success {
+  color: #10b981 !important;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .themed-text-accent {

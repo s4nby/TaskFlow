@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Check, Clock, Trash2, FilterX, Pencil, X, Star, 
-  ChevronDown, ChevronRight, GripVertical, Plus, ChevronUp
+  ChevronDown, ChevronRight, GripVertical, Plus, ChevronUp, Copy
 } from 'lucide-react';
 import type { Task, Priority, SubTask } from '../models/types';
 import AutoExpandingTextarea from '../components/AutoExpandingTextarea';
@@ -47,6 +47,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [mergeTargetId, setMergeTargetId] = useState<string | null>(null);
   const [isAddingTask, setIsAddingTask] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const startEditing = (task: Task) => {
     setEditingId(task.id);
@@ -72,6 +73,36 @@ const TaskListView: React.FC<TaskListViewProps> = ({
     onAddTask(e, isPrompt ? newTaskTitle : undefined);
     setIsAddingTask(false);
     setNewTaskTitle('');
+  };
+
+  const handleCopy = (task: Task) => {
+    const content = isPrompt ? `${task.title}\n\n${task.text}` : task.text;
+    navigator.clipboard.writeText(content);
+    setCopiedId(task.id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const renderFormattedPrompt = (text: string) => {
+    // Basic parser for hierarchy
+    const lines = text.split('\n');
+    return lines.map((line, i) => {
+      // Header detection (e.g. "FIX 1 —", "CONTEXT —", "### Title")
+      const isHeader = /^[A-Z0-9\s]+ —|^#+ /.test(line.trim());
+      
+      // Inline code detection
+      const parts = line.split(/(`[^`]+`)/);
+      const content = parts.map((part, pi) => {
+        if (part.startsWith('`') && part.endsWith('`')) {
+          return <code key={pi} className="prompt-inline-code">{part.slice(1, -1)}</code>;
+        }
+        return part;
+      });
+
+      if (isHeader) {
+        return <span key={i} className="prompt-header-text">{content}</span>;
+      }
+      return <div key={i}>{content}{i === lines.length - 1 ? '' : '\n'}</div>;
+    });
   };
 
   const startEditingSubTask = (sub: SubTask) => {
@@ -184,31 +215,36 @@ const TaskListView: React.FC<TaskListViewProps> = ({
           <div 
             key={task.id} 
             className="task-item-container"
-            draggable
-            onDragStart={() => handleDragStart(task.id)}
-            onDragOver={(e) => handleDragOver(e, task.id)}
-            onDrop={(e) => handleDrop(e, task.id)}
-            onDragLeave={handleDragLeave}
+            draggable={!isPrompt}
+            onDragStart={() => !isPrompt && handleDragStart(task.id)}
+            onDragOver={(e) => !isPrompt && handleDragOver(e, task.id)}
+            onDrop={(e) => !isPrompt && handleDrop(e, task.id)}
+            onDragLeave={() => !isPrompt && handleDragLeave()}
           >
-            <div className={`task-item themed-border ${mergeTargetId === task.id ? 'merge-target' : ''}`} style={{ borderLeft: `4px solid ${getPriorityColor(task.priority)}`, position: 'relative' }}>
-              <div className="task-left-controls">
-                <div className="task-drag-handle"><GripVertical size={14} /></div>
-                <button className="chevron-trigger" onClick={() => toggleExpand(task.id)} title="Sub-tasks">
-                  {expandedTasks.has(task.id) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                </button>
-              </div>
+            <div className={`task-item themed-border ${mergeTargetId === task.id ? 'merge-target' : ''}`} style={{ borderLeft: isPrompt ? 'none' : `4px solid ${getPriorityColor(task.priority)}`, position: 'relative' }}>
+              {!isPrompt && (
+                <div className="task-left-controls">
+                  <div className="task-drag-handle"><GripVertical size={14} /></div>
+                  <button className="chevron-trigger" onClick={() => toggleExpand(task.id)} title="Sub-tasks">
+                    {expandedTasks.has(task.id) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                  </button>
+                </div>
+              )}
               
-              <div className={`task-checkbox ${task.completed ? 'completed' : ''}`} onClick={() => onToggleTask(task.id)}>
-                {task.completed && <Check size={12} color="white" />}
-              </div>
-              <div className="task-content" style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: '4px', padding: '4px 0' }}>
+              {!isPrompt && (
+                <div className={`task-checkbox ${task.completed ? 'completed' : ''}`} onClick={() => onToggleTask(task.id)}>
+                  {task.completed && <Check size={12} color="white" />}
+                </div>
+              )}
+
+              <div className={`task-content ${isPrompt ? 'prompt-body-container' : ''}`} style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: '4px', padding: isPrompt ? '16px 0' : '4px 0' }}>
                 {editingId === task.id ? (
                   <>
                     {isPrompt && (
                       <input 
                         type="text"
                         className="quick-add-input"
-                        style={{ padding: '4px 8px', fontSize: '1rem', fontWeight: 700, marginBottom: '4px', borderBottom: '1px solid var(--glass-border)' }}
+                        style={{ padding: '4px 8px', fontSize: '1.25rem', fontWeight: 700, marginBottom: '12px', background: 'transparent', borderBottom: '1px solid var(--glass-border)' }}
                         placeholder="Prompt title..."
                         value={editingTitle}
                         onChange={(e) => setEditingTitle(e.target.value)}
@@ -234,59 +270,74 @@ const TaskListView: React.FC<TaskListViewProps> = ({
                   </>
                 ) : (
                   <>
-                    {isPrompt && task.title && <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>{task.title}</div>}
-                    <div className={`task-text ${task.completed ? 'completed' : ''} ${isPrompt ? 'prompt-content' : ''}`} style={isPrompt ? { marginTop: '4px' } : {}}>{task.text}</div>
+                    {isPrompt && task.title && <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '12px' }}>{task.title}</div>}
+                    <div className={`${!isPrompt ? 'task-text' : ''} ${task.completed ? 'completed' : ''} ${isPrompt ? 'prompt-content' : ''}`} style={isPrompt ? { marginTop: '4px' } : {}}>
+                      {isPrompt ? renderFormattedPrompt(task.text) : task.text}
+                    </div>
                     {task.dueDate && <span className="task-due-date themed-text-accent" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={10} />{task.dueDate}</span>}
                   </>
                 )}
               </div>
-              <div className="task-actions" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                <div className={`priority-indicator-container ${task.priority}`}>
-                  {task.priority === 'medium' ? (
-                    <>
+              <div className="task-actions" style={{ display: 'flex', gap: '4px', alignItems: 'center', alignSelf: 'flex-start', paddingTop: isPrompt ? '16px' : '0' }}>
+                {isPrompt ? (
+                  <>
+                    {copiedId === task.id ? (
+                      <div className="copy-success"><Check size={14} /> Copied!</div>
+                    ) : (
+                      <button className="entity-delete-trigger" onClick={() => handleCopy(task)} title="Copy to Clipboard">
+                        <Copy size={16} />
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <div className={`priority-indicator-container ${task.priority}`}>
+                    {task.priority === 'medium' ? (
+                      <>
+                        <button 
+                          className="priority-btn up" 
+                          onClick={() => onSetPriority(task.id, 'high')}
+                          title="Set High Priority"
+                        >
+                          <ChevronUp size={10} />
+                        </button>
+                        <button 
+                          className="priority-btn down" 
+                          onClick={() => onSetPriority(task.id, 'low')}
+                          title="Set Low Priority"
+                        >
+                          <ChevronDown size={10} />
+                        </button>
+                      </>
+                    ) : task.priority === 'low' ? (
                       <button 
-                        className="priority-btn up" 
-                        onClick={() => onSetPriority(task.id, 'high')}
-                        title="Set High Priority"
+                        className="priority-btn single" 
+                        onClick={() => onSetPriority(task.id, 'medium')}
+                        title="Set Medium Priority"
                       >
                         <ChevronUp size={10} />
                       </button>
+                    ) : (
                       <button 
-                        className="priority-btn down" 
-                        onClick={() => onSetPriority(task.id, 'low')}
-                        title="Set Low Priority"
+                        className="priority-btn single" 
+                        onClick={() => onSetPriority(task.id, 'medium')}
+                        title="Set Medium Priority"
                       >
                         <ChevronDown size={10} />
                       </button>
-                    </>
-                  ) : task.priority === 'low' ? (
-                    <button 
-                      className="priority-btn single" 
-                      onClick={() => onSetPriority(task.id, 'medium')}
-                      title="Set Medium Priority"
-                    >
-                      <ChevronUp size={10} />
-                    </button>
-                  ) : (
-                    <button 
-                      className="priority-btn single" 
-                      onClick={() => onSetPriority(task.id, 'medium')}
-                      title="Set Medium Priority"
-                    >
-                      <ChevronDown size={10} />
-                    </button>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
+                
                 {editingId === task.id ? (
                   <button className="entity-delete-trigger" onClick={() => setEditingId(null)} title="Cancel"><X size={14} /></button>
                 ) : (
-                  <button className="entity-delete-trigger task-edit-trigger" onClick={() => startEditing(task)} title="Edit Task"><Pencil size={14} /></button>
+                  <button className="entity-delete-trigger task-edit-trigger" onClick={() => startEditing(task)} title="Edit"><Pencil size={14} /></button>
                 )}
-                <button className="entity-delete-trigger" onClick={() => onDeleteTask(task.id)} title="Delete Task"><Trash2 size={14} /></button>
+                <button className="entity-delete-trigger" onClick={() => onDeleteTask(task.id)} title="Delete"><Trash2 size={14} /></button>
               </div>
             </div>
             
-            {expandedTasks.has(task.id) && (
+            {!isPrompt && expandedTasks.has(task.id) && (
               <div className="subtask-section">
                 {task.subTasks?.map(sub => (
                   <div key={sub.id} className="subtask-item">
@@ -321,7 +372,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({
                     placeholder="Add sub-task..." 
                     className="subtask-input"
                     value={newSubTaskText[task.id] || ''}
-                    onChange={(e) => setNewSubTaskText({ ...newSubTaskText, [task.id]: e.target.value })}
+                    onChange={(e) => setNewTaskTitle(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && newSubTaskText[task.id]?.trim()) {
                         onAddSubTask(task.id, newSubTaskText[task.id]);
@@ -342,7 +393,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({
             <button 
               className="add-task-btn" 
               onClick={() => setIsAddingTask(true)}
-              title="Add Task"
+              title="Add Prompt"
             >
               <Plus size={24} />
             </button>
