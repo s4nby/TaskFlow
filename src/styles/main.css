@@ -1295,24 +1295,21 @@ animation: fadeIn 0.2s ease-out;
 }
 
 .add-task-btn {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: var(--accent-color);
+  background: transparent;
   border: none;
-  color: white;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 5;
+  padding: 8px;
 }
 
 .add-task-btn:hover {
-  background: #2563eb;
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  color: var(--accent-color);
+  transform: scale(1.2);
 }
 
 .add-task-btn:active {

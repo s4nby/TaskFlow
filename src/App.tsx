@@ -11,6 +11,7 @@ import packageJson from '../package.json';
 const HubView = lazy(() => import('./views/HubView'));
 const CalendarView = lazy(() => import('./views/CalendarView'));
 const TaskListView = lazy(() => import('./views/TaskListView'));
+const PromptManagerView = lazy(() => import('./views/PromptManagerView'));
 const ProjectNamingModal = lazy(() => import('./components/ProjectNamingModal'));
 
 // Access Electron modules safely
@@ -141,6 +142,26 @@ const App: React.FC = () => {
               );
             default:
               const title = activeProject ? activeProject.name : state.activeListId === 'todo' ? 'To Do List' : state.activeListId === 'important' ? 'Important' : 'Tasks';
+              
+              if (activeProject?.type === 'prompt') {
+                return (
+                  <PromptManagerView 
+                    title={title}
+                    prompts={state.filteredTasks}
+                    onAddTask={(e, promptTitle) => {
+                      e.preventDefault();
+                      commands.addTask(undefined, undefined, 'low', promptTitle);
+                    }}
+                    onDeleteTask={(id) => commands.deleteTask(id)}
+                    onUpdateTask={(id, text, promptTitle) => {
+                      commands.updateTask(id, text, promptTitle);
+                    }}
+                    isPreferred={activeProject?.isPreferred}
+                    onTogglePreference={activeProject ? () => commands.toggleProjectPreference(activeProject.id) : undefined}
+                  />
+                );
+              }
+
               return (
                 <TaskListView 
                   title={title}
@@ -167,7 +188,6 @@ const App: React.FC = () => {
                   onUpdateSubTask={commands.updateSubTask}
                   onMergeTasks={commands.mergeTasks}
                   onReorderTasks={commands.reorderTasks}
-                  isPrompt={activeProject?.type === 'prompt'}
                 />
               );
           }

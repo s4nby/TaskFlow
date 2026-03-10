@@ -61,7 +61,7 @@ function createTray() {
       { label: 'Quit TaskFlow', click: () => { app.isQuitting = true; app.quit(); } }
     ]);
     
-    tray.setToolTip('TaskFlow Productivity');
+    tray.setToolTip('TaskFlow');
     tray.setContextMenu(contextMenu);
     
     tray.on('click', () => {
