@@ -22,6 +22,7 @@ const App: React.FC = () => {
   const { state, commands } = useAppViewModel();
   const [isNamingModalOpen, setIsNamingModalOpen] = useState(false);
   const [selectedCreationDate, setSelectedCreationDate] = useState<string | undefined>(undefined);
+  const [namingType, setNamingType] = useState<'project' | 'prompt'>('project');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -91,7 +92,10 @@ const App: React.FC = () => {
                 <HubView 
                   projectLists={state.projectLists}
                   tasks={state.tasks}
-                  onInitializeProject={() => setIsNamingModalOpen(true)}
+                  onInitializeProject={(type = 'project') => {
+                    setNamingType(type);
+                    setIsNamingModalOpen(true);
+                  }}
                   onSelectProject={(id) => {
                     commands.setActiveListId(id);
                   }}
@@ -104,7 +108,10 @@ const App: React.FC = () => {
                   title="Favorites"
                   projectLists={state.projectLists.filter(p => p.isPreferred)}
                   tasks={state.tasks}
-                  onInitializeProject={() => setIsNamingModalOpen(true)}
+                  onInitializeProject={(type = 'project') => {
+                    setNamingType(type);
+                    setIsNamingModalOpen(true);
+                  }}
                   onSelectProject={(id) => {
                     commands.setActiveListId(id);
                   }}
@@ -154,6 +161,7 @@ const App: React.FC = () => {
                   onUpdateSubTask={commands.updateSubTask}
                   onMergeTasks={commands.mergeTasks}
                   onReorderTasks={commands.reorderTasks}
+                  isPrompt={activeProject?.type === 'prompt'}
                 />
               );
           }
@@ -330,14 +338,17 @@ const App: React.FC = () => {
       <Suspense fallback={null}>
         <ProjectNamingModal 
           isOpen={isNamingModalOpen}
+          type={namingType}
           onClose={() => {
             setIsNamingModalOpen(false);
             setSelectedCreationDate(undefined);
+            setNamingType('project');
           }}
           onCreate={(name) => {
-            commands.createProject(name, selectedCreationDate);
+            commands.createProject(name, selectedCreationDate, namingType);
             setIsNamingModalOpen(false);
             setSelectedCreationDate(undefined);
+            setNamingType('project');
           }}
         />
       </Suspense>

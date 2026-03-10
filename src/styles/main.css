@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap');
+
 :root {
   --sidebar-width-expanded: 200px;
   --sidebar-width-collapsed: 52px;
@@ -584,6 +586,14 @@ body {
 .task-text.completed {
   color: var(--text-secondary);
   text-decoration: line-through;
+}
+
+.prompt-content {
+  font-family: 'Fira Code', 'Fira Mono', monospace !important;
+  white-space: pre-wrap !important;
+  word-break: break-word;
+  line-height: 1.5;
+  font-variant-ligatures: contextual;
 }
 
 .themed-text-accent {

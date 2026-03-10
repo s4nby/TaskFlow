@@ -26,13 +26,15 @@ interface TaskListViewProps {
   onUpdateSubTask: (taskId: string, subTaskId: string, text: string) => void;
   onMergeTasks: (sourceId: string, targetId: string) => void;
   onReorderTasks: (listId: string, newOrder: Task[]) => void;
+  isPrompt?: boolean;
 }
 
 const TaskListView: React.FC<TaskListViewProps> = ({ 
   title, tasks, filterDate, newTaskText, 
   onSetNewTaskText, onAddTask, onToggleTask, onDeleteTask, onUpdateTask, onClearFilter,
   hideQuickAdd = false, isPreferred = false, onTogglePreference,
-  onSetPriority, onAddSubTask, onToggleSubTask, onUpdateSubTask, onMergeTasks, onReorderTasks
+  onSetPriority, onAddSubTask, onToggleSubTask, onUpdateSubTask, onMergeTasks, onReorderTasks,
+  isPrompt = false
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
@@ -191,7 +193,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({
               <div className="task-content" style={{ display: 'flex', flex: 1, alignItems: 'center', gap: '8px' }}>
                 {editingId === task.id ? (
                   <AutoExpandingTextarea 
-                    className="quick-add-input" 
+                    className={`quick-add-input ${isPrompt ? 'prompt-content' : ''}`} 
                     style={{ padding: '4px 8px', fontSize: '0.9rem' }}
                     value={editingText} 
                     onChange={(e) => setEditingText(e.target.value)}
@@ -207,7 +209,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({
                   />
                 ) : (
                   <>
-                    <span className={`task-text ${task.completed ? 'completed' : ''}`}>{task.text}</span>
+                    <span className={`task-text ${task.completed ? 'completed' : ''} ${isPrompt ? 'prompt-content' : ''}`}>{task.text}</span>
                     {task.dueDate && <span className="task-due-date themed-text-accent" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={10} />{task.dueDate}</span>}
                   </>
                 )}
@@ -322,8 +324,8 @@ const TaskListView: React.FC<TaskListViewProps> = ({
             <form className="quick-add-container inline-quick-add" onSubmit={handleAddTask}>
               <div className="input-group themed-input-container">
                 <AutoExpandingTextarea 
-                  className="quick-add-input" 
-                  placeholder="What needs to be done?" 
+                  className={`quick-add-input ${isPrompt ? 'prompt-content' : ''}`} 
+                  placeholder={isPrompt ? "Paste or type your prompt here..." : "What needs to be done?"} 
                   value={newTaskText} 
                   onChange={(e) => onSetNewTaskText(e.target.value)}
                   onBlur={() => {

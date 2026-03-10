@@ -23,6 +23,7 @@ export interface ProjectList {
   createdDate: string; // ISO YYYY-MM-DD
   isPreferred?: boolean;
   index: number;
+  type?: 'project' | 'prompt';
 }
 
 export interface DayData {

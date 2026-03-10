@@ -3,11 +3,12 @@ import { X } from 'lucide-react';
 
 interface ProjectNamingModalProps {
   isOpen: boolean;
+  type?: 'project' | 'prompt';
   onClose: () => void;
   onCreate: (name: string) => void;
 }
 
-const ProjectNamingModal: React.FC<ProjectNamingModalProps> = ({ isOpen, onClose, onCreate }) => {
+const ProjectNamingModal: React.FC<ProjectNamingModalProps> = ({ isOpen, type = 'project', onClose, onCreate }) => {
   const [name, setName] = useState('');
   const [error, setError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,6 +37,8 @@ const ProjectNamingModal: React.FC<ProjectNamingModalProps> = ({ isOpen, onClose
     if (error) setError(false);
   };
 
+  const isPrompt = type === 'prompt';
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="quick-add-flyout glass-effect modal-sm" onClick={e => e.stopPropagation()}>
@@ -43,21 +46,21 @@ const ProjectNamingModal: React.FC<ProjectNamingModalProps> = ({ isOpen, onClose
           <X size={18} />
         </button>
         <div className="flyout-header">
-          <h3>Initialize Workspace</h3>
-          <span className="flyout-date">Define your new project scope</span>
+          <h3>{isPrompt ? 'Initialize Prompt List' : 'Initialize Workspace'}</h3>
+          <span className="flyout-date">{isPrompt ? 'Group your useful prompts' : 'Define your new project scope'}</span>
         </div>
         <form onSubmit={handleSubmit}>
           <input 
             ref={inputRef}
             type="text" 
-            placeholder="Project Name (e.g. Q1 Marketing)" 
+            placeholder={isPrompt ? "Prompt Category (e.g. Code Review)" : "Project Name (e.g. Q1 Marketing)"} 
             value={name} 
             onChange={handleChange} 
             className={`flyout-input themed-field ${error ? 'error-field' : ''}`} 
           />
-          {error && <div className="error-text">Project name is required</div>}
+          {error && <div className="error-text">{isPrompt ? 'Prompt category name is required' : 'Project name is required'}</div>}
           <div className="flyout-actions centered">
-            <button type="submit" className="btn-submit themed-primary-btn full-width">Initialize Project</button>
+            <button type="submit" className="btn-submit themed-primary-btn full-width">{isPrompt ? 'Initialize Prompt List' : 'Initialize Project'}</button>
           </div>
         </form>
       </div>

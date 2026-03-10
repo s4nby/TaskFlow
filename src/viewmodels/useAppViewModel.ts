@@ -279,7 +279,7 @@ export const useAppViewModel = () => {
     setNewTaskText('');
   };
 
-  const createProject = async (name: string, date?: string) => {
+  const createProject = async (name: string, date?: string, type: 'project' | 'prompt' = 'project') => {
     const maxIndex = projectLists.length > 0 ? Math.max(...projectLists.map(p => p.index ?? -1)) : -1;
     
     // Ensure we use local date string YYYY-MM-DD
@@ -290,7 +290,8 @@ export const useAppViewModel = () => {
       id: Date.now().toString(), 
       name: name.trim(),
       createdDate: date || localDateStr,
-      index: maxIndex + 1
+      index: maxIndex + 1,
+      type
     };
     setProjectLists(prev => [...prev, newProject]);
     setActiveListId(newProject.id);

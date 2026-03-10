@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Layout, List, 
-  Star, FolderKanban, Trash2, Pencil
+  Star, FolderKanban, Trash2, Pencil, Scroll
 } from 'lucide-react';
 import type { ProjectList, ViewState } from '../models/types';
 
@@ -20,6 +20,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingText] = useState('');
 
+  const projects = projectLists.filter(p => !p.type || p.type === 'project');
+  const prompts = projectLists.filter(p => p.type === 'prompt');
+
   const startEditing = (project: ProjectList) => {
     setEditingId(project.id);
     setEditingText(project.name);
@@ -35,6 +38,66 @@ const Sidebar: React.FC<SidebarProps> = ({
   const cancelEditing = () => {
     setEditingId(null);
   };
+
+  const renderListItem = (project: ProjectList) => (
+    <div key={project.id} className={`list-item ${activeListId === project.id ? 'active' : ''}`} onClick={() => onNavigate(project.id)}>
+      <div className="list-icon">
+        {project.isPreferred ? (
+          <Star size={18} fill="#fbbf24" color="#fbbf24" />
+        ) : (
+          project.type === 'prompt' ? <Scroll size={18} /> : <FolderKanban size={18} />
+        )}
+      </div>
+      
+      {isExpanded && (
+        <div className="list-content">
+          {editingId === project.id ? (
+            <input 
+              type="text" 
+              className="quick-add-input" 
+              style={{ padding: '2px 4px', fontSize: '0.85rem', background: 'var(--input-bg)' }}
+              value={editingName} 
+              onChange={(e) => setEditingText(e.target.value)}
+              onBlur={saveEditing}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') saveEditing();
+                if (e.key === 'Escape') cancelEditing();
+              }}
+              autoFocus
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <span className="list-name">{project.name}</span>
+          )}
+        </div>
+      )}
+
+      {isExpanded && !editingId && (
+        <div className="list-actions" style={{ display: 'flex', gap: '2px' }}>
+          <button 
+            className="entity-delete-trigger task-edit-trigger" 
+            onClick={(e) => {
+              e.stopPropagation();
+              startEditing(project);
+            }}
+            title="Rename"
+          >
+            <Pencil size={12} />
+          </button>
+          <button 
+            className="entity-delete-trigger sidebar-delete-btn" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteProject(project.id);
+            }}
+            title="Delete"
+          >
+            <Trash2 size={12} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <aside className={`sidebar ${isExpanded ? 'expanded' : 'collapsed'}`}>
@@ -67,62 +130,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div className="sidebar-section-header">
           {isExpanded ? 'PROJECTS' : <div className="divider" />}
         </div>
+        {projects.map(renderListItem)}
 
-        {projectLists.map(project => (
-          <div key={project.id} className={`list-item ${activeListId === project.id ? 'active' : ''}`} onClick={() => onNavigate(project.id)}>
-            <div className="list-icon">
-              {project.isPreferred ? <Star size={18} fill="#fbbf24" color="#fbbf24" /> : <FolderKanban size={18} />}
-            </div>
-            
-            {isExpanded && (
-              <div className="list-content">
-                {editingId === project.id ? (
-                  <input 
-                    type="text" 
-                    className="quick-add-input" 
-                    style={{ padding: '2px 4px', fontSize: '0.85rem', background: 'var(--input-bg)' }}
-                    value={editingName} 
-                    onChange={(e) => setEditingText(e.target.value)}
-                    onBlur={saveEditing}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') saveEditing();
-                      if (e.key === 'Escape') cancelEditing();
-                    }}
-                    autoFocus
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                ) : (
-                  <span className="list-name">{project.name}</span>
-                )}
-              </div>
-            )}
-
-            {isExpanded && !editingId && (
-              <div className="list-actions" style={{ display: 'flex', gap: '2px' }}>
-                <button 
-                  className="entity-delete-trigger task-edit-trigger" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    startEditing(project);
-                  }}
-                  title="Rename Project"
-                >
-                  <Pencil size={12} />
-                </button>
-                <button 
-                  className="entity-delete-trigger sidebar-delete-btn" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteProject(project.id);
-                  }}
-                  title="Delete Project"
-                >
-                  <Trash2 size={12} />
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
+        <div className="sidebar-section-header">
+          {isExpanded ? 'USEFUL PROMPTS' : <div className="divider" />}
+        </div>
+        {prompts.map(renderListItem)}
       </div>
     </aside>
   );
