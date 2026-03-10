@@ -445,7 +445,7 @@ body {
   display: flex;
   flex-direction: column;
   margin: 0 auto;
-  padding: 24px 40px;
+  padding: 16px 40px 24px 40px;
   min-height: 100%;
   box-sizing: border-box;
 }
@@ -606,54 +606,55 @@ body {
 /* HUB GRID */
 .hub-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
   width: 100%;
 }
 
 .hub-card {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 10px;
+  padding: 12px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-height: 120px;
+  gap: 4px;
+  min-height: 85px;
 }
 
 .hub-card:hover {
   background: rgba(255, 255, 255, 0.05);
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   border-color: var(--accent-color);
 }
 
 .hub-card.new-trigger {
-  border: 2px dashed var(--glass-border);
+  border: 1px dashed var(--glass-border);
   background: transparent;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   color: var(--text-secondary);
-}
-
-.hub-card.new-trigger svg {
+  min-height: 36px;
+  height: 36px;
+  padding: 0 12px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .hub-card.new-trigger:hover {
-  transform: none !important; /* Strictly no movement on hover */
+  transform: none !important;
   border-color: var(--accent-color);
   color: var(--text-primary);
   background: rgba(59, 130, 246, 0.05);
---radius-button: 6px;
---modal-bg: rgba(0, 0, 0, 0.6);
 }
 
 .modal-overlay {
 position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-background: var(--modal-bg); backdrop-filter: blur(8px);
+background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px);
 z-index: 2000; display: flex; align-items: center; justify-content: center;
 animation: fadeIn 0.2s ease-out;
 }
