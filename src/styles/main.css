@@ -184,10 +184,12 @@ body {
 
 .sidebar.expanded {
   width: var(--sidebar-width-expanded);
+  max-width: var(--sidebar-width-expanded);
 }
 
 .sidebar.collapsed {
   width: var(--sidebar-width-collapsed);
+  max-width: var(--sidebar-width-collapsed);
 }
 
 .list-container {
@@ -203,11 +205,14 @@ body {
   gap: 10px;
   padding: 0 12px;
   height: 36px;
+  min-height: 36px;
+  max-height: 36px;
   border-radius: 0 6px 6px 0;
   cursor: pointer;
   transition: all 0.2s;
   color: var(--text-secondary);
   font-size: 0.9rem;
+  line-height: 36px;
   border-left: 3px solid transparent;
   min-width: 0;
 }
@@ -238,7 +243,7 @@ body {
   gap: 8px;
   overflow: hidden;
   height: 100%;
-  min-width: 0; /* Allow container to shrink for ellipsis */
+  min-width: 0; /* CRITICAL for ellipsis in flex containers */
 }
 
 .list-name {
@@ -250,6 +255,8 @@ body {
   white-space: nowrap;
   flex: 1;
   min-width: 0;
+  line-height: inherit;
+  vertical-align: middle;
 }
 
 .collapsed .list-name {
@@ -522,7 +529,6 @@ body {
   flex-direction: column;
   gap: 6px;
   width: 100%;
-  padding-bottom: 80px;
 }
 
 .task-item.themed-border {
@@ -1215,16 +1221,16 @@ animation: fadeIn 0.2s ease-out;
 .add-task-trigger-container {
   display: flex;
   justify-content: center;
-  padding: 24px 0 40px 0;
+  padding: 24px 0; /* Consistent 24px gap from top (populated state) */
   width: 100%;
+  margin-top: 0;
 }
 
 .add-task-trigger-container.empty-state {
-  flex: 1;
-  align-items: center;
+  min-height: auto;
+  padding: 40px 0; /* Move it up in empty state, roughly 120-160px from top including header/padding */
   justify-content: center;
-  min-height: 200px;
-  padding-bottom: 140px; /* Further increased shift upward */
+  align-items: flex-start;
 }
 
 .add-task-btn {
