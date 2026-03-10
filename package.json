@@ -1,7 +1,7 @@
 {
   "name": "taskflow",
   "private": true,
-  "version": "1.11.5",
+  "version": "1.11.6",
   "description": "A high-performance, minimalist to-do list application for Windows.",
   "author": "s4nby <95icarus@gmail.com>",
   "type": "module",
@@ -48,6 +48,8 @@
       "verifyUpdateCodeSignature": false
     },
     "nsis": {
+      "installerIcon": "newicons/icon_256x256.png",
+      "uninstallerIcon": "newicons/icon_256x256.png",
       "oneClick": false,
       "perMachine": true,
       "allowElevation": true,

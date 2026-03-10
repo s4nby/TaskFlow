@@ -83,25 +83,46 @@ const TaskListView: React.FC<TaskListViewProps> = ({
   };
 
   const renderFormattedPrompt = (text: string) => {
-    // Basic parser for hierarchy
-    const lines = text.split('\n');
-    return lines.map((line, i) => {
-      // Header detection (e.g. "FIX 1 —", "CONTEXT —", "### Title")
-      const isHeader = /^[A-Z0-9\s]+ —|^#+ /.test(line.trim());
-      
-      // Inline code detection
-      const parts = line.split(/(`[^`]+`)/);
-      const content = parts.map((part, pi) => {
-        if (part.startsWith('`') && part.endsWith('`')) {
-          return <code key={pi} className="prompt-inline-code">{part.slice(1, -1)}</code>;
-        }
-        return part;
-      });
+    // 1. Split into paragraphs by double-newlines
+    const paragraphs = text.split(/\n\s*\n/);
+    
+    return paragraphs.map((para, pi) => {
+      // 2. For each paragraph, check if it's a list or header
+      const lines = para.split('\n');
+      const isHeader = /^[A-Z0-9\s]+ —|^#+ /.test(lines[0].trim());
+      const isList = /^[\s]*[-*•] |^[\s]*\d+\. /.test(lines[0]);
 
-      if (isHeader) {
-        return <span key={i} className="prompt-header-text">{content}</span>;
+      // Heuristic: If it's a regular paragraph (not list/header), 
+      // join lines to allow reflowing.
+      let processedContent: React.ReactNode[];
+      
+      if (!isHeader && !isList) {
+        // Join lines with a space
+        const joinedText = para.replace(/\n/g, ' ');
+        processedContent = renderInlineElements(joinedText);
+      } else {
+        // Keep lines but process inline elements
+        processedContent = lines.map((line, li) => (
+          <div key={li}>{renderInlineElements(line)}{li === lines.length - 1 ? '' : '\n'}</div>
+        ));
       }
-      return <div key={i}>{content}{i === lines.length - 1 ? '' : '\n'}</div>;
+
+      return (
+        <div key={pi} className={isHeader ? "prompt-paragraph-header" : "prompt-paragraph"}>
+          {isHeader ? <span className="prompt-header-text">{processedContent}</span> : processedContent}
+          {pi === paragraphs.length - 1 ? '' : '\n\n'}
+        </div>
+      );
+    });
+  };
+
+  const renderInlineElements = (text: string) => {
+    const parts = text.split(/(`[^`]+`)/);
+    return parts.map((part, pi) => {
+      if (part.startsWith('`') && part.endsWith('`')) {
+        return <code key={pi} className="prompt-inline-code">{part.slice(1, -1)}</code>;
+      }
+      return part;
     });
   };
 
