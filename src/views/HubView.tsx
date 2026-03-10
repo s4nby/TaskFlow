@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, FolderKanban, Trash2, ArrowRight, TrendingUp, Download, Star } from 'lucide-react';
+import { Plus, FolderKanban, Trash2, ArrowRight, Star } from 'lucide-react';
 import type { ProjectList, Task } from '../models/types';
 
 interface HubViewProps {
@@ -8,20 +8,15 @@ interface HubViewProps {
   onInitializeProject: () => void;
   onSelectProject: (id: string) => void;
   onDeleteProject: (id: string) => void;
-  onExport: () => void;
   title?: string;
   hideActions?: boolean;
 }
 
 const HubView: React.FC<HubViewProps> = ({ 
-  projectLists, tasks, onInitializeProject, onSelectProject, onDeleteProject, onExport,
+  projectLists, tasks, onInitializeProject, onSelectProject, onDeleteProject,
   title = "Creation Hub",
   hideActions = false
 }) => {
-  const completedTasks = tasks.filter(t => t.completed).length;
-  const totalTasks = tasks.length;
-  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
   return (
     <div className="standard-page">
       <header className="header-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -29,31 +24,7 @@ const HubView: React.FC<HubViewProps> = ({
           <h1>{title}</h1>
           <p>{hideActions ? 'Your curated list of starred workspaces' : 'Manage your active project landscapes'}</p>
         </div>
-        {!hideActions && (
-          <button className="themed-secondary-btn export-btn" onClick={onExport}>
-            <Download size={14} />
-            Export Data
-          </button>
-        )}
       </header>
-
-      {!hideActions && (
-        <div className="trends-section">
-          <div className="trends-header">
-            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <TrendingUp size={18} className="themed-text-accent" />
-              Productivity Trends
-            </h3>
-            <span className="themed-text-accent" style={{ fontSize: '1.25rem', fontWeight: 800 }}>{completionRate}%</span>
-          </div>
-          <div style={{ height: '4px', background: 'var(--glass-border)', borderRadius: '2px', overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${completionRate}%`, background: 'var(--accent-color)', transition: 'width 1s ease-out' }} />
-          </div>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '8px' }}>
-            {completedTasks} of {totalTasks} tasks completed across all projects.
-          </p>
-        </div>
-      )}
 
       <div className={`hub-section ${projectLists.length === 0 ? 'empty-state' : ''}`} style={{ marginTop: '32px' }}>
         <div className="sidebar-section-header" style={{ paddingLeft: 0, marginBottom: '12px' }}>

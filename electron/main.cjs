@@ -239,21 +239,6 @@ function createWindow() {
       mainWindow.webContents.send('system-theme-updated', nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
     }
   });
-
-  // Export Logic IPC
-  ipcMain.handle('export-to-markdown', async (event, data) => {
-    const { filePath } = await dialog.showSaveDialog({
-      title: 'Export Tasks to Markdown',
-      defaultPath: 'TaskFlow_Export.md',
-      filters: [{ name: 'Markdown', extensions: ['md'] }]
-    });
-
-    if (filePath) {
-      fs.writeFileSync(filePath, data);
-      return true;
-    }
-    return false;
-  });
 }
 
 app.on('will-quit', () => {

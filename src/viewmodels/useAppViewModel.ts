@@ -95,6 +95,18 @@ export const useAppViewModel = () => {
   }, [ipcRenderer, themeMode]);
 
   useEffect(() => {
+    const handleOnline = () => {
+      console.log('Connectivity restored. Re-checking for updates...');
+      checkForUpdates();
+    };
+
+    window.addEventListener('online', handleOnline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [ipcRenderer]);
+
+  useEffect(() => {
     localStorage.setItem('themeMode', themeMode);
     if (themeMode !== 'system') {
       setTheme(themeMode);

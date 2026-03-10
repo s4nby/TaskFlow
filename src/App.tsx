@@ -74,28 +74,6 @@ const App: React.FC = () => {
 
   const activeProject = state.projectLists.find(p => p.id === state.activeListId);
 
-  const handleExport = async () => {
-    if (!ipcRenderer) return;
-    
-    let md = "# TaskFlow Data Export\n\n";
-    state.projectLists.forEach(p => {
-      md += `## Project: ${p.name} (Created: ${p.createdDate})\n`;
-      const projTasks = state.tasks.filter(t => t.listId === p.id);
-      projTasks.forEach(t => {
-        md += `- [${t.completed ? 'x' : ' '}] ${t.text} (Priority: ${t.priority})\n`;
-        t.subTasks?.forEach(s => {
-          md += `  - [${s.completed ? 'x' : ' '}] ${s.text}\n`;
-        });
-      });
-      md += "\n";
-    });
-
-    const success = await ipcRenderer.invoke('export-to-markdown', md);
-    if (success) {
-      alert('Data exported successfully!');
-    }
-  };
-
   const toggleTheme = () => {
     const modes: ('system' | 'light' | 'dark')[] = ['system', 'light', 'dark'];
     const currentIndex = modes.indexOf(state.themeMode);
@@ -118,7 +96,6 @@ const App: React.FC = () => {
                     commands.setActiveListId(id);
                   }}
                   onDeleteProject={(id) => commands.deleteProject(id)}
-                  onExport={handleExport}
                 />
               );
             case 'important':
@@ -132,7 +109,6 @@ const App: React.FC = () => {
                     commands.setActiveListId(id);
                   }}
                   onDeleteProject={(id) => commands.deleteProject(id)}
-                  onExport={handleExport}
                   hideActions={true}
                 />
               );

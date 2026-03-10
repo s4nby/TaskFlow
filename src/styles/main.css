@@ -243,8 +243,10 @@ body {
 .list-name {
   opacity: 1;
   transition: opacity 0.2s;
-  display: flex;
-  align-items: center;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .collapsed .list-name {
@@ -615,11 +617,9 @@ body {
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
-  padding-bottom: 32px; /* Increased shift upward */
 }
 
 .hub-card.new-trigger svg {
-  margin-bottom: 4px;
 }
 
 .hub-card.new-trigger:hover {
@@ -845,29 +845,6 @@ animation: fadeIn 0.2s ease-out;
   border-color: var(--accent-color);
 }
 
-/* Trends & Export UI */
-.trends-section {
-  margin-top: 24px;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-}
-
-.trends-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.export-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.75rem;
-  padding: 6px 12px;
-}
 .hub-card-header {
   display: flex;
   justify-content: space-between;
