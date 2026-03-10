@@ -615,6 +615,11 @@ body {
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
+  padding-bottom: 24px; /* Shift content slightly upward */
+}
+
+.hub-card.new-trigger svg {
+  margin-bottom: 4px;
 }
 
 .hub-card.new-trigger:hover {
@@ -1201,7 +1206,7 @@ animation: fadeIn 0.2s ease-out;
   align-items: center;
   justify-content: center;
   min-height: 200px;
-  padding-bottom: 80px; /* Shift upward from absolute center */
+  padding-bottom: 120px; /* Increased shift upward from absolute center */
 }
 
 .add-task-btn {
@@ -1218,6 +1223,7 @@ animation: fadeIn 0.2s ease-out;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 5;
+  transform: translateY(-20px); /* Permanent slight upward shift for balance */
 }
 
 .add-task-btn:hover {

@@ -25,23 +25,32 @@ if (!gotLock) {
 
 function createTray() {
   try {
-    // In dev, use public/vite.svg. In prod, Vite copies public to dist.
-    const iconPath = process.env.NODE_ENV === 'development' 
-      ? path.join(__dirname, '../public/vite.svg')
-      : path.join(__dirname, '../dist/vite.svg');
+    // tray-icon.png was copied to public/ and should land in dist/ on build
+    let iconPath = process.env.NODE_ENV === 'development' 
+      ? path.join(__dirname, '../public/tray-icon.png')
+      : path.join(__dirname, '../dist/tray-icon.png');
     
-    let trayIcon;
-    if (fs.existsSync(iconPath)) {
-      trayIcon = nativeImage.createFromPath(iconPath);
-    } else {
-      // Fallback
-      const altPath = path.join(__dirname, 'vite.svg');
-      if (fs.existsSync(altPath)) {
-        trayIcon = nativeImage.createFromPath(altPath);
-      } else {
-        // Last resort empty image to avoid crash
-        trayIcon = nativeImage.createEmpty();
+    // Fallback chain
+    if (!fs.existsSync(iconPath)) {
+      // Try vite.svg
+      const svgPath = process.env.NODE_ENV === 'development'
+        ? path.join(__dirname, '../public/vite.svg')
+        : path.join(__dirname, '../dist/vite.svg');
+      
+      if (fs.existsSync(svgPath)) {
+        iconPath = svgPath;
+      } else if (process.platform === 'win32') {
+        // Ultimate Windows fallback: Use the icon embedded in the .exe
+        iconPath = process.execPath;
       }
+    }
+
+    let trayIcon = nativeImage.createFromPath(iconPath);
+    
+    // On Windows, if we're using the EXE fallback, we don't need to resize 
+    // as much, but for PNG/SVG we should ensure it fits 16x16
+    if (!iconPath.endsWith('.exe')) {
+      trayIcon = trayIcon.resize({ width: 16, height: 16 });
     }
 
     tray = new Tray(trayIcon);
@@ -121,9 +130,8 @@ function createWindow() {
     mainWindow.setSkipTaskbar(false);
   });
 
-  mainWindow.on('hide', () => {
-    mainWindow.setSkipTaskbar(true);
-  });
+  // Note: We removed the mainWindow.on('hide') taskbar hiding logic 
+  // so the app remains visible in the taskbar even if minimized or hidden.
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
