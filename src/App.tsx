@@ -384,7 +384,6 @@ const App: React.FC = () => {
             setNamingType('project');
           }}
           onCreate={(name) => {
-            const newId = Date.now().toString(); // Consistent with useAppViewModel logic
             commands.createProject(name, selectedCreationDate, namingType);
             
             // Only redirect if created from Calendar View (selectedCreationDate is set)

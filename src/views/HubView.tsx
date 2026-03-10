@@ -7,7 +7,6 @@ interface HubCardProps {
   tasks: Task[];
   onSelectProject: (id: string) => void;
   onTogglePreference: (id: string) => void;
-  onRenameProject: (id: string, name: string) => void;
   onDeleteProject: (id: string) => void;
   isEditing: boolean;
   editingName: string;
@@ -18,7 +17,7 @@ interface HubCardProps {
 }
 
 const HubCard: React.FC<HubCardProps> = ({
-  proj, tasks, onSelectProject, onTogglePreference, onRenameProject, onDeleteProject,
+  proj, tasks, onSelectProject, onTogglePreference, onDeleteProject,
   isEditing, editingName, setEditingName, startEditing, saveEditing, cancelEditing
 }) => {
   const projTasks = tasks.filter(t => t.listId === proj.id);
@@ -222,7 +221,6 @@ const HubView: React.FC<HubViewProps> = ({
               tasks={tasks}
               onSelectProject={onSelectProject}
               onTogglePreference={onTogglePreference}
-              onRenameProject={onRenameProject}
               onDeleteProject={onDeleteProject}
               isEditing={editingId === proj.id}
               editingName={editingName}
@@ -256,7 +254,6 @@ const HubView: React.FC<HubViewProps> = ({
               tasks={tasks}
               onSelectProject={onSelectProject}
               onTogglePreference={onTogglePreference}
-              onRenameProject={onRenameProject}
               onDeleteProject={onDeleteProject}
               isEditing={editingId === proj.id}
               editingName={editingName}
