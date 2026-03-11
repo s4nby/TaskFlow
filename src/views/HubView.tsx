@@ -34,15 +34,17 @@ const HubCard: React.FC<HubCardProps> = ({
     }
   };
 
+  const accentColor = isPrompt ? '#227a39' : (proj.color || 'var(--accent-color)');
+
   return (
     <div 
       className="hub-card" 
       onClick={() => onSelectProject(proj.id)} 
-      style={proj.isPreferred ? { borderColor: 'var(--accent-color)', background: 'rgba(59, 130, 246, 0.03)' } : {}}
+      style={proj.isPreferred ? { borderColor: accentColor, background: `${accentColor}08` } : {}}
     >
       <div className="hub-card-header">
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          {isPrompt ? <Scroll size={14} color="var(--accent-color)" /> : <FolderKanban size={14} color="var(--accent-color)" />}
+          {isPrompt ? <Scroll size={14} color={accentColor} fill={accentColor} fillOpacity={0.2} /> : <FolderKanban size={14} color={accentColor} />}
           <button 
             className={`entity-delete-trigger ${proj.isPreferred ? 'preferred' : ''}`}
             style={{ opacity: proj.isPreferred ? 1 : 0.4, padding: '2px' }}
@@ -179,21 +181,12 @@ const HubView: React.FC<HubViewProps> = ({
         
         {onOpenAI && !hideActions && (
           <button 
-            className="themed-primary-btn" 
+            className="ai-assist-btn" 
             onClick={onOpenAI}
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px',
-              padding: '8px 16px',
-              background: 'rgba(59, 130, 246, 0.1)',
-              color: 'var(--accent-color)',
-              border: '1px solid rgba(59, 130, 246, 0.2)'
-            }}
             title="AI Task Architect"
           >
             <Sparkles size={16} />
-            <span style={{ fontSize: '0.85rem' }}>AI Assistant</span>
+            <span>AI Assistant</span>
           </button>
         )}
       </header>
@@ -236,7 +229,7 @@ const HubView: React.FC<HubViewProps> = ({
           {hideActions ? 'STARRED PROMPTS' : 'PROMPT MANAGER'} <div className="divider" />
         </div>
 
-        <div className="hub-grid">
+        <div className="hub-grid prompt-manager-section">
           {!hideActions && (
             <div 
               className="hub-card new-trigger" 

@@ -106,12 +106,12 @@ const AIListGeneratorModal: React.FC<AIListGeneratorModalProps> = ({ isOpen, onC
         
         <div className="flyout-header" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{ 
-            background: 'rgba(59, 130, 246, 0.2)', 
+            background: 'rgba(246, 173, 1, 0.1)', 
             padding: '8px', 
             borderRadius: '10px',
-            color: 'var(--accent-color)'
+            color: '#f6ad01'
           }}>
-            <Sparkles size={24} />
+            <Sparkles size={24} fill="#f6ad01" fillOpacity={0.2} />
           </div>
           <div>
             <h3 style={{ margin: 0 }}>AI Task Architect</h3>
@@ -148,7 +148,7 @@ const AIListGeneratorModal: React.FC<AIListGeneratorModalProps> = ({ isOpen, onC
               className="themed-primary-btn" 
               onClick={handleGenerate}
               disabled={isGenerating || !prompt.trim()}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f6ad01' }}
             >
               {isGenerating ? (
                 <>

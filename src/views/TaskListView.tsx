@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Check, Clock, Trash2, FilterX, Pencil, X, Star, 
-  ChevronDown, ChevronRight, GripVertical, Plus, ChevronUp
+  ChevronDown, ChevronRight, GripVertical, Plus, ChevronUp, Copy
 } from 'lucide-react';
 import type { Task, Priority, SubTask } from '../models/types';
 import AutoExpandingTextarea from '../components/AutoExpandingTextarea';
@@ -54,6 +54,20 @@ const TaskListView: React.FC<TaskListViewProps> = ({
       onUpdateTask(editingId, editingText);
       setEditingId(null);
     }
+  };
+
+  const handleToggleTask = (id: string, isCompleted: boolean) => {
+    onToggleTask(id);
+    // Auto-collapse on complete (if it's not already completed, it's becoming completed)
+    if (!isCompleted) {
+      const next = new Set(expandedTasks);
+      next.delete(id);
+      setExpandedTasks(next);
+    }
+  };
+
+  const handleCopyTask = (text: string) => {
+    navigator.clipboard.writeText(text);
   };
 
   const handleAddTask = (e: React.FormEvent) => {
@@ -172,7 +186,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({
             onDrop={(e) => handleDrop(e, task.id)}
             onDragLeave={handleDragLeave}
           >
-            <div className={`task-item themed-border ${mergeTargetId === task.id ? 'merge-target' : ''}`} style={{ borderLeft: `4px solid ${getPriorityColor(task.priority)}`, position: 'relative' }}>
+            <div className={`task-item themed-border ${task.completed ? 'completed' : ''} ${mergeTargetId === task.id ? 'merge-target' : ''}`} style={{ borderLeft: `4px solid ${getPriorityColor(task.priority)}`, position: 'relative' }}>
               <div className="task-left-controls">
                 <div className="task-drag-handle"><GripVertical size={14} /></div>
                 <button className="chevron-trigger" onClick={() => toggleExpand(task.id)} title="Sub-tasks">
@@ -180,7 +194,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({
                 </button>
               </div>
               
-              <div className={`task-checkbox ${task.completed ? 'completed' : ''}`} onClick={() => onToggleTask(task.id)}>
+              <div className={`task-checkbox ${task.completed ? 'completed' : ''}`} onClick={() => handleToggleTask(task.id, task.completed)}>
                 {task.completed && <Check size={12} color="white" />}
               </div>
               <div className="task-content" style={{ display: 'flex', flex: 1, alignItems: 'center', gap: '8px' }}>
@@ -202,7 +216,21 @@ const TaskListView: React.FC<TaskListViewProps> = ({
                   />
                 ) : (
                   <>
-                    <span className={`task-text ${task.completed ? 'completed' : ''}`}>{task.text}</span>
+                    <span 
+                      className={`task-text ${task.completed ? 'completed' : ''} ${expandedTasks.has(task.id) ? 'expanded' : ''}`}
+                      onClick={() => toggleExpand(task.id)}
+                      title="Click to expand/collapse"
+                    >
+                      {task.text}
+                    </span>
+                    <button 
+                      className="entity-delete-trigger task-copy-trigger" 
+                      onClick={() => handleCopyTask(task.text)} 
+                      title="Copy Task"
+                      style={{ padding: '2px', opacity: 0, marginLeft: '4px' }}
+                    >
+                      <Copy size={12} />
+                    </button>
                     {task.dueDate && <span className="task-due-date themed-text-accent" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={10} />{task.dueDate}</span>}
                   </>
                 )}

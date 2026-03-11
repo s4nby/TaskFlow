@@ -211,6 +211,9 @@ export const useAppViewModel = () => {
     const priorityWeight = { high: 3, medium: 2, low: 1 };
 
     return list.sort((a, b) => {
+      if (a.completed !== b.completed) {
+        return a.completed ? 1 : -1;
+      }
       const pA = priorityWeight[a.priority] || 0;
       const pB = priorityWeight[b.priority] || 0;
       
@@ -336,14 +339,14 @@ export const useAppViewModel = () => {
     const now = new Date();
     const localDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     
-    const newProject: ProjectList = { 
-      id: Date.now().toString(), 
+    const newProject: ProjectList = {
+      id: Date.now().toString(),
       name: name.trim(),
       createdDate: date || localDateStr,
       index: maxIndex + 1,
-      type
-    };
-    setProjectLists(prev => [...prev, newProject]);
+      type,
+      color: type === 'prompt' ? '#227a39' : undefined
+    };    setProjectLists(prev => [...prev, newProject]);
   };
 
   const generateAIProject = async (name: string, tasksToCreate: { text: string; priority: Priority; subTasks?: string[] }[]) => {

@@ -26,6 +26,7 @@ export interface ProjectList {
   isPreferred?: boolean;
   index: number;
   type?: 'project' | 'prompt';
+  color?: string;
 }
 
 export interface DayData {
