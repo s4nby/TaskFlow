@@ -87,11 +87,17 @@ function createWindow() {
   // Remove default menu
   Menu.setApplicationMenu(null);
 
+  const windowIconPath = path.join(__dirname, '../newicons/icon_256x256.png');
+  const windowIcon = fs.existsSync(windowIconPath)
+    ? nativeImage.createFromPath(windowIconPath)
+    : undefined;
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     frame: false,
     titleBarStyle: 'hidden',
+    icon: windowIcon,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,

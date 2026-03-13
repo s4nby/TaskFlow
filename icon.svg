@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d1421"/>
+      <stop offset="100%" stop-color="#0a1628"/>
+    </linearGradient>
+    <linearGradient id="checkGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00e5c3"/>
+      <stop offset="100%" stop-color="#4b7cf7"/>
+    </linearGradient>
+    <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#162d4a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="256" height="256" rx="56" ry="56" fill="url(#bgGrad)"/>
+
+  <!-- Subtle task list lines (top) -->
+  <rect x="58" y="64" width="140" height="9" rx="4.5" fill="url(#lineGrad)"/>
+  <rect x="58" y="82" width="104" height="9" rx="4.5" fill="url(#lineGrad)" opacity="0.7"/>
+
+  <!-- Subtle task list lines (bottom) -->
+  <rect x="58" y="164" width="128" height="9" rx="4.5" fill="url(#lineGrad)"/>
+  <rect x="58" y="182" width="88" height="9" rx="4.5" fill="url(#lineGrad)" opacity="0.7"/>
+
+  <!-- Glow halo behind checkmark -->
+  <polyline
+    points="60,128 100,168 196,80"
+    fill="none"
+    stroke="#00e5c3"
+    stroke-width="32"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.15"
+  />
+  <polyline
+    points="60,128 100,168 196,80"
+    fill="none"
+    stroke="#4b7cf7"
+    stroke-width="20"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.1"
+  />
+
+  <!-- Main checkmark -->
+  <polyline
+    points="60,128 100,168 196,80"
+    fill="none"
+    stroke="url(#checkGrad)"
+    stroke-width="18"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
