@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  Trash2, Pencil, Star, Plus, Copy, Check
+  Trash2, Pencil, Star, Plus, Copy, Check, ChevronDown, ChevronRight
 } from 'lucide-react';
 import type { Task } from '../models/types';
 import AutoExpandingTextarea from '../components/AutoExpandingTextarea';
@@ -192,6 +192,14 @@ const PromptManagerView: React.FC<PromptManagerViewProps> = ({
                     </div>
                   ) : (
                     <>
+                      <button 
+                        className="chevron-trigger" 
+                        onClick={() => toggleExpand(prompt.id)} 
+                        title="Expand Prompt"
+                        style={{ opacity: 0.6, padding: '4px', marginRight: '4px' }}
+                      >
+                        {expandedPrompts.has(prompt.id) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                      </button>
                       <div 
                         className={`task-text ${expandedPrompts.has(prompt.id) ? 'expanded' : ''}`}
                         onClick={() => toggleExpand(prompt.id)}

@@ -1,6 +1,8 @@
 import React, { useState, Suspense, lazy, useEffect, useRef, useCallback } from 'react';
 import { Minus, Square, X, Menu, ChevronLeft, Sun, Moon, Monitor, ArrowDown, Calendar as CalendarIcon, Search } from 'lucide-react';
 import './styles/main.css';
+import AIAssistantPanel from './components/AIAssistantPanel';
+import type { PendingCreation } from './hooks/useAIAssistant';
 
 // MVVM Layers
 import { useAppViewModel } from './viewmodels/useAppViewModel';
@@ -13,7 +15,6 @@ const CalendarView = lazy(() => import('./views/CalendarView'));
 const TaskListView = lazy(() => import('./views/TaskListView'));
 const PromptManagerView = lazy(() => import('./views/PromptManagerView'));
 const ProjectNamingModal = lazy(() => import('./components/ProjectNamingModal'));
-const AIListGeneratorModal = lazy(() => import('./components/AIListGeneratorModal'));
 
 // Access Electron modules safely
 // @ts-ignore
@@ -23,10 +24,10 @@ const ipcRenderer = electron ? electron.ipcRenderer : null;
 const App: React.FC = () => {
   const { state, commands } = useAppViewModel();
   const [isNamingModalOpen, setIsNamingModalOpen] = useState(false);
-  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [selectedCreationDate, setSelectedCreationDate] = useState<string | undefined>(undefined);
   const [namingType, setNamingType] = useState<'project' | 'prompt'>('project');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isAIOpen, setIsAIOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -93,7 +94,7 @@ const App: React.FC = () => {
           switch (state.activeListId) {
             case 'hub':
               return (
-                <HubView 
+                <HubView
                   projectLists={state.projectLists}
                   tasks={state.tasks}
                   onInitializeProject={(type = 'project') => {
@@ -106,7 +107,8 @@ const App: React.FC = () => {
                   onDeleteProject={(id) => commands.deleteProject(id)}
                   onRenameProject={commands.updateProjectName}
                   onTogglePreference={commands.toggleProjectPreference}
-                  onOpenAI={() => setIsAIModalOpen(true)}
+                  onOpenAI={() => setIsAIOpen(prev => !prev)}
+                  isAIOpen={isAIOpen}
                 />
               );
             case 'important':
@@ -126,7 +128,6 @@ const App: React.FC = () => {
                   onRenameProject={commands.updateProjectName}
                   onTogglePreference={commands.toggleProjectPreference}
                   hideActions={true}
-                  onOpenAI={() => setIsAIModalOpen(true)}
                 />
               );
             case 'calendar':
@@ -285,8 +286,8 @@ const App: React.FC = () => {
           >
             <CalendarIcon size={18} />
           </button>
-          <button 
-            className={`header-icon-btn ${isSearchOpen ? 'active' : ''}`} 
+          <button
+            className={`header-icon-btn ${isSearchOpen ? 'active' : ''}`}
             onClick={() => setIsSearchOpen(true)}
             title="Search (Ctrl+F)"
           >
@@ -366,15 +367,22 @@ const App: React.FC = () => {
 
       <div className="app-version-label">v{packageJson.version}</div>
 
+      <AIAssistantPanel
+        isOpen={isAIOpen}
+        onClose={() => setIsAIOpen(false)}
+        activeListId={state.activeListId}
+        projectLists={state.projectLists}
+        tasks={state.tasks}
+        onCreateEntry={(creation: PendingCreation) => {
+          if (creation.type === 'todo_list') {
+            commands.createProjectWithTasks(creation.title, 'project', creation.items);
+          } else {
+            commands.createProjectWithTasks(creation.title, 'prompt', [creation.content], creation.promptTitle);
+          }
+        }}
+      />
+
       <Suspense fallback={null}>
-        <AIListGeneratorModal 
-          isOpen={isAIModalOpen}
-          onClose={() => setIsAIModalOpen(false)}
-          onGenerate={(name, tasks) => {
-            commands.generateAIProject(name, tasks);
-            setIsAIModalOpen(false);
-          }}
-        />
         <ProjectNamingModal 
           isOpen={isNamingModalOpen}
           type={namingType}

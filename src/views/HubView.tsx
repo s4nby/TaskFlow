@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, FolderKanban, Trash2, ArrowRight, Star, Scroll, Pencil, Sparkles, Copy, Check } from 'lucide-react';
+import { Plus, FolderKanban, Trash2, ArrowRight, Star, Scroll, Pencil, Copy, Check, Bot } from 'lucide-react';
 import type { ProjectList, Task } from '../models/types';
 
 interface HubCardProps {
@@ -142,16 +142,19 @@ interface HubViewProps {
   onDeleteProject: (id: string) => void;
   onRenameProject: (id: string, name: string) => void;
   onTogglePreference: (id: string) => void;
-  onOpenAI?: () => void;
   title?: string;
   hideActions?: boolean;
+  onOpenAI?: () => void;
+  isAIOpen?: boolean;
 }
 
-const HubView: React.FC<HubViewProps> = ({ 
-  projectLists, tasks, onInitializeProject, onSelectProject, onDeleteProject, 
-  onRenameProject, onTogglePreference, onOpenAI,
+const HubView: React.FC<HubViewProps> = ({
+  projectLists, tasks, onInitializeProject, onSelectProject, onDeleteProject,
+  onRenameProject, onTogglePreference,
   title = "Creation Hub",
-  hideActions = false
+  hideActions = false,
+  onOpenAI,
+  isAIOpen = false,
 }) => {
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editingName, setEditingName] = React.useState('');
@@ -178,14 +181,13 @@ const HubView: React.FC<HubViewProps> = ({
           <h1 style={{ fontSize: '1.5rem' }}>{title}</h1>
           <p>{hideActions ? 'Your curated list of starred workspaces' : 'Manage your active project landscapes'}</p>
         </div>
-        
-        {onOpenAI && !hideActions && (
-          <button 
-            className="ai-assist-btn" 
+        {onOpenAI && (
+          <button
+            className={`hub-ai-btn${isAIOpen ? ' active' : ''}`}
             onClick={onOpenAI}
-            title="AI Task Architect"
+            title="AI Assistant"
           >
-            <Sparkles size={16} />
+            <Bot size={16} />
             <span>AI Assistant</span>
           </button>
         )}

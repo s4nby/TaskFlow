@@ -334,11 +334,11 @@ export const useAppViewModel = () => {
 
   const createProject = async (name: string, date?: string, type: 'project' | 'prompt' = 'project') => {
     const maxIndex = projectLists.length > 0 ? Math.max(...projectLists.map(p => p.index ?? -1)) : -1;
-    
+
     // Ensure we use local date string YYYY-MM-DD
     const now = new Date();
     const localDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    
+
     const newProject: ProjectList = {
       id: Date.now().toString(),
       name: name.trim(),
@@ -349,34 +349,46 @@ export const useAppViewModel = () => {
     };    setProjectLists(prev => [...prev, newProject]);
   };
 
-  const generateAIProject = async (name: string, tasksToCreate: { text: string; priority: Priority; subTasks?: string[] }[]) => {
+  const createProjectWithTasks = (
+    name: string,
+    type: 'project' | 'prompt',
+    items: string[],         // task texts for project; [promptContent] for prompt
+    promptTitle?: string     // task-level title when type === 'prompt'
+  ) => {
     const maxIndex = projectLists.length > 0 ? Math.max(...projectLists.map(p => p.index ?? -1)) : -1;
-    
     const now = new Date();
     const localDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    
     const projectId = Date.now().toString();
-    const newProject: ProjectList = { 
-      id: projectId, 
+
+    const newProject: ProjectList = {
+      id: projectId,
       name: name.trim(),
       createdDate: localDateStr,
       index: maxIndex + 1,
-      type: 'project'
+      type,
+      color: type === 'prompt' ? '#227a39' : undefined,
     };
 
-    const newTasks: Task[] = tasksToCreate.map((t, idx) => ({
-      id: (Date.now() + idx + 1).toString(),
-      text: t.text,
-      completed: false,
-      listId: projectId,
-      priority: t.priority,
-      index: idx,
-      subTasks: (t.subTasks || []).map((st, sidx) => ({
-        id: (Date.now() + idx + 1000 + sidx).toString(),
-        text: st,
-        completed: false
-      }))
-    }));
+    const newTasks: Task[] = type === 'project'
+      ? items.map((text, i) => ({
+          id: (Date.now() + i + 1).toString(),
+          text: text.trim(),
+          completed: false,
+          listId: projectId,
+          priority: 'low' as Priority,
+          index: i,
+          subTasks: [],
+        }))
+      : [{
+          id: (Date.now() + 1).toString(),
+          text: (items[0] ?? '').trim(),
+          title: (promptTitle ?? name).trim(),
+          completed: false,
+          listId: projectId,
+          priority: 'low' as Priority,
+          index: 0,
+          subTasks: [],
+        }];
 
     setProjectLists(prev => [...prev, newProject]);
     setTasks(prev => [...prev, ...newTasks]);
@@ -532,10 +544,10 @@ export const useAppViewModel = () => {
       setIsSidebarExpanded, 
       setNewTaskText,
       setSearchTerm,
-      addTask, 
-      createProject, 
-      generateAIProject,
-      deleteProject, 
+      addTask,
+      createProject,
+      createProjectWithTasks,
+      deleteProject,
       toggleProjectPreference,
       updateProjectName,
       toggleTask, 
@@ -560,7 +572,7 @@ export const useAppViewModel = () => {
     newTaskText, searchTerm, searchResults,
     theme, themeMode,
     updateStatus, availableVersion, downloadProgress,
-    addTask, createProject, generateAIProject, deleteProject, 
+    addTask, createProject, createProjectWithTasks, deleteProject,
     toggleProjectPreference, updateProjectName, toggleTask, deleteTask, 
     updateTask, setTaskPriority, addSubTask, toggleSubTask, updateSubTask, 
     mergeTasks, reorderTasks, reorderProjects, changeMonth, setThemeMode, 
