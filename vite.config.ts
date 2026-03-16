@@ -7,16 +7,33 @@ const packageJson = JSON.parse(
   readFileSync(join(__dirname, 'package.json'), 'utf-8')
 )
 
+// Simple XOR-based obfuscation to match src/utils/crypto.ts
+// (Duplicate logic here to avoid importing TS files into vite.config.ts)
+const SECRET = 'taskflow-ai-architect-2026';
+function encrypt(text: string): string {
+  if (!text) return '';
+  const result = [];
+  for (let i = 0; i < text.length; i++) {
+    const charCode = text.charCodeAt(i) ^ SECRET.charCodeAt(i % SECRET.length);
+    result.push(String.fromCharCode(charCode));
+  }
+  return Buffer.from(result.join('')).toString('base64');
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
+  
+  const encGemini = encrypt(env.VITE_GEMINI_API_KEY ?? '');
+  const encGroq = encrypt(env.VITE_GROQ_API_KEY ?? '');
+
   return {
     plugins: [react()],
     base: './',
     define: {
       'import.meta.env.PACKAGE_VERSION': JSON.stringify(packageJson.version),
-      '__GEMINI_API_KEY__': JSON.stringify(env.VITE_GEMINI_API_KEY ?? ''),
-      '__GROQ_API_KEY__': JSON.stringify(env.VITE_GROQ_API_KEY ?? ''),
+      '__GEMINI_API_KEY__': JSON.stringify(encGemini),
+      '__GROQ_API_KEY__': JSON.stringify(encGroq),
     }
   }
 })

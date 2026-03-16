@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { decrypt } from '../utils/crypto';
 
 export interface ChatMessage {
   id: string;
@@ -156,8 +157,18 @@ export function useAIAssistant() {
 
   const sendMessage = useCallback(
     async (userText: string, _contextInfo: string) => {
-      const groqKey: string = __GROQ_API_KEY__;
-      const geminiKey: string = __GEMINI_API_KEY__;
+      // 1. Try runtime environment variables (unencrypted .env next to EXE)
+      let groqKey = (typeof process !== 'undefined' && process.env.VITE_GROQ_API_KEY) || '';
+      let geminiKey = (typeof process !== 'undefined' && process.env.VITE_GEMINI_API_KEY) || '';
+
+      // 2. If not found, fallback to bundled/encrypted keys
+      if (!groqKey && __GROQ_API_KEY__) {
+        groqKey = decrypt(__GROQ_API_KEY__);
+      }
+      if (!geminiKey && __GEMINI_API_KEY__) {
+        geminiKey = decrypt(__GEMINI_API_KEY__);
+      }
+
       const hasGroq = groqKey.length > 0 && groqKey !== 'your_groq_api_key_here';
       const hasGemini = geminiKey.length > 0 && geminiKey !== 'your_gemini_api_key_here';
 

@@ -2,6 +2,19 @@ const { app, BrowserWindow, ipcMain, Menu, nativeTheme, Notification, Tray, glob
 const path = require('path');
 const fs = require('fs');
 
+// Load environment variables from .env file
+// In development, this loads from the project root.
+// In production, it will look next to the executable.
+require('dotenv').config();
+
+if (app.isPackaged) {
+  const exeDir = path.dirname(app.getPath('exe'));
+  const envPath = path.join(exeDir, '.env');
+  if (fs.existsSync(envPath)) {
+    require('dotenv').config({ path: envPath, override: true });
+  }
+}
+
 let mainWindow;
 let tray;
 

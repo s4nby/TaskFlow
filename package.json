@@ -1,7 +1,7 @@
 {
   "name": "taskflow",
   "private": true,
-  "version": "1.15.1",
+  "version": "1.15.5",
   "description": "A high-performance, minimalist to-do list application for Windows.",
   "author": "s4nby <95icarus@gmail.com>",
   "type": "module",
@@ -33,6 +33,15 @@
       "!dist-electron",
       "!node_modules/.cache",
       "!**/*.ts"
+    ],
+    "extraFiles": [
+      {
+        "from": ".env.example",
+        "to": ".env.template",
+        "filter": [
+          "**/*"
+        ]
+      }
     ],
     "asar": true,
     "win": {
@@ -72,6 +81,7 @@
     ]
   },
   "dependencies": {
+    "dotenv": "^17.3.1",
     "electron-log": "^5.4.3",
     "electron-updater": "^6.8.3",
     "lucide-react": "^0.577.0",
