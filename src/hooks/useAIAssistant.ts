@@ -149,6 +149,12 @@ async function callGemini(
   return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
 }
 
+// ── Hardcoded Encrypted Fallbacks ───────────────────────────────
+// These are XOR-obfuscated keys that are bundled as internal defaults.
+// (XORed with 'taskflow-ai-architect-2026')
+const BUNDLED_GEMINI = 'NSgJCjUVLUFoCA5ZNytVAT8bFSdEVQZhAE4yCRkaLzwFBn4AWW44';
+const BUNDLED_GROQ = 'ExIYNB8bOBpvFiFOGBgCPVs4LhkGG3FiZXEQGBFYIDU/GWorMB5SPiIpBwIGIhpjQF5KfRA5MBg=';
+
 export function useAIAssistant() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -161,12 +167,20 @@ export function useAIAssistant() {
       let groqKey = (typeof process !== 'undefined' && process.env.VITE_GROQ_API_KEY) || '';
       let geminiKey = (typeof process !== 'undefined' && process.env.VITE_GEMINI_API_KEY) || '';
 
-      // 2. If not found, fallback to bundled/encrypted keys
-      if (!groqKey && __GROQ_API_KEY__) {
+      // 2. Fallback to build-time bundled/encrypted keys (defined via Vite)
+      if (!groqKey && typeof __GROQ_API_KEY__ !== 'undefined' && __GROQ_API_KEY__) {
         groqKey = decrypt(__GROQ_API_KEY__);
       }
-      if (!geminiKey && __GEMINI_API_KEY__) {
+      if (!geminiKey && typeof __GEMINI_API_KEY__ !== 'undefined' && __GEMINI_API_KEY__) {
         geminiKey = decrypt(__GEMINI_API_KEY__);
+      }
+
+      // 3. Final fallback to hardcoded internal keys (ensures it works in production build)
+      if ((!groqKey || groqKey === 'your_groq_api_key_here') && BUNDLED_GROQ) {
+        groqKey = decrypt(BUNDLED_GROQ);
+      }
+      if ((!geminiKey || geminiKey === 'your_gemini_api_key_here') && BUNDLED_GEMINI) {
+        geminiKey = decrypt(BUNDLED_GEMINI);
       }
 
       const hasGroq = groqKey.length > 0 && groqKey !== 'your_groq_api_key_here';
