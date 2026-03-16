@@ -272,7 +272,7 @@ const App: React.FC = () => {
       <div className="unified-header">
         {/* LEFT: SIDEBAR CONTROLS */}
         <div className="header-left-zone">
-          <img src="/icon_32x32.png" className="app-header-icon" alt="taskflow" />
+          <img src="icon_32x32.png" className="app-header-icon" alt="taskflow" />
           <button 
             className="header-icon-btn" 
             onClick={() => commands.setIsSidebarExpanded(!state.isSidebarExpanded)}
