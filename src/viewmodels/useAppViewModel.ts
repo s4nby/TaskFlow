@@ -517,8 +517,6 @@ export const useAppViewModel = () => {
 
   const startUpdate = () => {
     if (ipcRenderer && (updateStatus === 'available' || updateStatus === 'error')) {
-      setUpdateStatus('downloading');
-      setDownloadProgress(0);
       ipcRenderer.send('start-update');
     }
   };

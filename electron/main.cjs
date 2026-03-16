@@ -241,11 +241,15 @@ function createWindow() {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-downloaded');
         }
+        // Immediate silent install and relaunch
+        app.isQuitting = true;
+        autoUpdater.quitAndInstall(true, true);
       });
 
       autoUpdater.on('error', (err) => {
         log.error('[Updater] Event: error. Details:', err);
         if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.show(); // Restore window if update fails
           mainWindow.webContents.send('update-error', err.message);
         }
       });
@@ -257,14 +261,15 @@ function createWindow() {
       });
 
       ipcMain.on('start-update', () => {
+        log.info('[Updater] IPC received: start-update. Hiding window for silent update.');
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.hide(); // "Immediate shutdown" feel
+        }
         autoUpdater.downloadUpdate();
       });
 
       ipcMain.on('install-update', () => {
-        // CRITICAL: Set isQuitting to true so the window close event 
-        // isn't intercepted and redirected to tray.
         app.isQuitting = true;
-        // isSilent: true, isForceRunAfter: true
         autoUpdater.quitAndInstall(true, true);
       });
 

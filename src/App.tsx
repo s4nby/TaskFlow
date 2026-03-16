@@ -305,26 +305,22 @@ const App: React.FC = () => {
         <div className="header-right-zone">
           <div className="window-controls-integrated">
             {state.updateStatus !== 'none' && (
-              <button 
-                className={`glyph-btn update-indicator ${state.updateStatus}`} 
+              <button
+                className={`glyph-btn update-indicator ${state.updateStatus}`}
                 onClick={() => {
-                  if (state.updateStatus === 'ready') {
-                    commands.installUpdate();
-                  } else if (ipcRenderer) {
+                  if (ipcRenderer) {
                     commands.startUpdate();
                   }
                 }}
                 title={
-                  state.updateStatus === 'ready' ? 'Restart to Update' : 
-                  state.updateStatus === 'downloading' ? (state.downloadProgress > 0 ? `Downloading... ${state.downloadProgress}%` : 'Downloading...') : 
+                  state.updateStatus === 'ready' ? 'Restart to Update' :
                   state.updateStatus === 'error' ? 'Update Failed - Click to Retry' :
                   `Update Available (${state.availableVersion}) - Click to Update`
                 }
               >
-                <ArrowDown size={16} className={state.updateStatus === 'downloading' ? 'anim-bounce' : ''} />
+                <ArrowDown size={16} />
               </button>
-            )}
-            <button 
+            )}            <button 
               className="glyph-btn" 
               onClick={toggleTheme} 
               title={`Theme: ${state.themeMode.charAt(0).toUpperCase() + state.themeMode.slice(1)}`}
