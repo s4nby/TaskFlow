@@ -170,14 +170,30 @@ function createWindow() {
       
       log.info('[Updater] Initializing autoUpdater. App version:', app.getVersion());
 
-      autoUpdater.setFeedURL({
-        provider: 'github',
-        owner: 's4nby',
-        repo: 'TaskFlow'
-      });
+      // UPDATER TESTING CONFIGURATION
+      const customFeedUrl = process.env.UPDATER_FEED_URL;
+      const ghToken = process.env.GH_TOKEN;
+      const allowPrerelease = process.env.UPDATER_ALLOW_PRERELEASE === 'true';
+
+      if (customFeedUrl) {
+        log.info('[Updater] Using custom Feed URL:', customFeedUrl);
+        autoUpdater.setFeedURL({
+          provider: 'generic',
+          url: customFeedUrl
+        });
+      } else {
+        log.info('[Updater] Using default GitHub provider (Draft/Private supported if GH_TOKEN is set)');
+        autoUpdater.setFeedURL({
+          provider: 'github',
+          owner: 's4nby',
+          repo: 'TaskFlow',
+          token: ghToken || undefined
+        });
+      }
       
       autoUpdater.autoDownload = false; 
       autoUpdater.allowDowngrade = false;
+      autoUpdater.allowPrerelease = allowPrerelease;
       autoUpdater.autoInstallOnAppQuit = true;
 
       const checkUpdates = () => {

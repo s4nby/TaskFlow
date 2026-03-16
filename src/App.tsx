@@ -109,6 +109,9 @@ const App: React.FC = () => {
                   onTogglePreference={commands.toggleProjectPreference}
                   onOpenAI={() => setIsAIOpen(prev => !prev)}
                   isAIOpen={isAIOpen}
+                  updateStatus={state.updateStatus}
+                  setUpdateStatus={commands.setUpdateStatus}
+                  setDownloadProgress={commands.setDownloadProgress}
                 />
               );
             case 'important':
@@ -269,6 +272,7 @@ const App: React.FC = () => {
       <div className="unified-header">
         {/* LEFT: SIDEBAR CONTROLS */}
         <div className="header-left-zone">
+          <img src="/icon_32x32.png" className="app-header-icon" alt="taskflow" />
           <button 
             className="header-icon-btn" 
             onClick={() => commands.setIsSidebarExpanded(!state.isSidebarExpanded)}
@@ -293,11 +297,8 @@ const App: React.FC = () => {
           >
             <Search size={18} />
           </button>
-        </div>
-
-        {/* CENTER: PRIMARY BRANDING */}
-        <div className="header-center-zone">
-          <div className="header-branding">TaskFlow</div>
+          <div className="header-divider" />
+          <div className="header-branding">taskflow</div>
         </div>
 
         {/* RIGHT: WINDOW CONTROLS */}

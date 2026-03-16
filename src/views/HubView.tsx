@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus, FolderKanban, Trash2, ArrowRight, Star, Scroll, Pencil, Copy, Check, Bot } from 'lucide-react';
-import type { ProjectList, Task } from '../models/types';
+import type { ProjectList, Task, UpdateStatus } from '../models/types';
 
 interface HubCardProps {
   proj: ProjectList;
@@ -146,6 +146,9 @@ interface HubViewProps {
   hideActions?: boolean;
   onOpenAI?: () => void;
   isAIOpen?: boolean;
+  updateStatus?: UpdateStatus;
+  setUpdateStatus?: (status: UpdateStatus) => void;
+  setDownloadProgress?: (progress: number) => void;
 }
 
 const HubView: React.FC<HubViewProps> = ({
@@ -155,9 +158,30 @@ const HubView: React.FC<HubViewProps> = ({
   hideActions = false,
   onOpenAI,
   isAIOpen = false,
+  updateStatus = 'none',
+  setUpdateStatus,
+  setDownloadProgress
 }) => {
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editingName, setEditingName] = React.useState('');
+
+  const cycleUpdater = () => {
+    // Only allow cycling in development or if explicitly enabled via env
+    const isDebugEnabled = import.meta.env.DEV || import.meta.env.VITE_DEBUG_UPDATER === 'true';
+    if (!isDebugEnabled || !setUpdateStatus || !setDownloadProgress) return;
+    
+    const states: UpdateStatus[] = ['none', 'available', 'downloading', 'ready', 'error'];
+    const currentIndex = states.indexOf(updateStatus);
+    const nextIndex = (currentIndex + 1) % states.length;
+    const nextStatus = states[nextIndex];
+    
+    setUpdateStatus(nextStatus);
+    if (nextStatus === 'downloading') {
+      setDownloadProgress(45);
+    } else {
+      setDownloadProgress(0);
+    }
+  };
 
   const startEditing = (proj: ProjectList) => {
     setEditingId(proj.id);
@@ -177,7 +201,12 @@ const HubView: React.FC<HubViewProps> = ({
   return (
     <div className="standard-page">
       <header className="header-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <div>
+        <div 
+          onClick={(e) => {
+            // Obscure sequence: 7 clicks to toggle debug UI states
+            if (e.detail === 7) cycleUpdater(); 
+          }}
+        >
           <h1 style={{ fontSize: '1.5rem' }}>{title}</h1>
           <p>{hideActions ? 'Your curated list of starred workspaces' : 'Manage your active project landscapes'}</p>
         </div>

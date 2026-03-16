@@ -112,8 +112,8 @@ export const useAppViewModel = () => {
 
     const onUpdateNotAvailable = () => {
       logInfo('IPC - Update Not Available');
-      // Only reset to none if we were just checking (don't overwrite manual check if it found one)
-      setUpdateStatus(prev => prev === 'none' ? 'none' : prev);
+      // Only reset if we aren't already handling a download/ready state
+      setUpdateStatus(prev => (prev === 'available' || prev === 'error') ? 'none' : prev);
     };
 
     const onUpdateProgress = (_event: any, progressObj: any) => {
@@ -516,7 +516,7 @@ export const useAppViewModel = () => {
   };
 
   const startUpdate = () => {
-    if (ipcRenderer) {
+    if (ipcRenderer && (updateStatus === 'available' || updateStatus === 'error')) {
       setUpdateStatus('downloading');
       setDownloadProgress(0);
       ipcRenderer.send('start-update');
@@ -544,6 +544,8 @@ export const useAppViewModel = () => {
       setIsSidebarExpanded, 
       setNewTaskText,
       setSearchTerm,
+      setUpdateStatus,
+      setDownloadProgress,
       addTask,
       createProject,
       createProjectWithTasks,

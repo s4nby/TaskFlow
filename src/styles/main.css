@@ -73,6 +73,15 @@ input, textarea {
   height: 100%;
   -webkit-app-region: no-drag;
   z-index: 1002;
+  padding-left: 4px;
+}
+
+.app-header-icon {
+  width: 16px;
+  height: 16px;
+  margin-left: 10px;
+  margin-right: 6px;
+  pointer-events: none;
 }
 
 .header-right-zone {
@@ -93,25 +102,15 @@ input, textarea {
   margin: 0 4px;
 }
 
-.header-center-zone {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  pointer-events: none;
-  z-index: 1001;
-}
-
 .header-branding {
-  font-weight: 700;
-  font-size: 0.85rem;
-  letter-spacing: 0.5px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.2px;
   color: var(--text-primary);
   text-transform: none;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  opacity: 0.9;
+  opacity: 0.8;
+  margin-left: 12px;
 }
 
 .header-icon-btn {
@@ -1344,20 +1343,24 @@ animation: fadeIn 0.2s ease-out;
   margin-top: 2px;
 }
 
+.glyph-btn.update-indicator {
+  transition: transform 0.2s; /* Remove color transition for instant state feedback */
+}
+
 .glyph-btn.update-indicator.available {
-  color: var(--accent-color);
+  color: var(--accent-color) !important;
 }
 
 .glyph-btn.update-indicator.downloading {
-  color: #f59e0b; /* Orange while downloading */
+  color: #f59e0b !important; /* Orange while downloading */
 }
 
 .glyph-btn.update-indicator.ready {
-  color: #10b981; /* Green for ready */
+  color: #10b981 !important; /* Green for ready */
 }
 
 .glyph-btn.update-indicator.error {
-  color: #ef4444; /* Red for error */
+  color: #ef4444 !important; /* Red for error */
 }
 
 .anim-bounce {
