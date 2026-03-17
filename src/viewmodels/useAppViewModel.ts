@@ -115,8 +115,8 @@ export const useAppViewModel = () => {
     };
 
     const onUpdateDownloaded = () => {
-      logInfo('IPC - Update Downloaded — triggering silent install');
-      ipcRenderer.send('install-update');
+      logInfo('IPC - Update Downloaded — ready to install');
+      setUpdateStatus('ready');
     };
 
     const wrappedAvailable = ipcRenderer.on('update-available', onUpdateAvailable);
@@ -468,7 +468,7 @@ export const useAppViewModel = () => {
   };
 
   const startUpdate = () => {
-    if (ipcRenderer && (updateStatus === 'available' || updateStatus === 'error')) {
+    if (ipcRenderer && updateStatus === 'available') {
       ipcRenderer.send('start-update');
     }
   };

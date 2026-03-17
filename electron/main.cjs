@@ -244,9 +244,8 @@ function createWindow() {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('update-downloaded');
         }
-        // Immediate silent install and relaunch
-        app.isQuitting = true;
-        autoUpdater.quitAndInstall(true, true);
+        // autoInstallOnAppQuit handles installation — no quitAndInstall here
+        // to avoid a double-install race with the install-update IPC handler.
       });
 
       autoUpdater.on('error', (err) => {
@@ -265,7 +264,11 @@ function createWindow() {
         autoUpdater.downloadUpdate();
       });
 
+      let installingUpdate = false;
       ipcMain.on('install-update', () => {
+        if (installingUpdate) return;
+        installingUpdate = true;
+        log.info('[Updater] IPC received: install-update. Launching installer.');
         app.isQuitting = true;
         autoUpdater.quitAndInstall(true, true);
       });
