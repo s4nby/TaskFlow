@@ -24,7 +24,6 @@ function encrypt(text: string): string {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   
-  const encGemini = encrypt(env.VITE_GEMINI_API_KEY ?? '');
   const encGroq = encrypt(env.VITE_GROQ_API_KEY ?? '');
 
   return {
@@ -32,7 +31,6 @@ export default defineConfig(({ mode }) => {
     base: './',
     define: {
       'import.meta.env.PACKAGE_VERSION': JSON.stringify(packageJson.version),
-      '__GEMINI_API_KEY__': JSON.stringify(encGemini),
       '__GROQ_API_KEY__': JSON.stringify(encGroq),
     }
   }

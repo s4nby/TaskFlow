@@ -11,13 +11,8 @@ export type PendingCreation =
   | { type: 'todo_list'; title: string; items: string[] }
   | { type: 'prompt'; title: string; content: string; promptTitle: string };
 
-// ── Groq (primary — free, 30 RPM) ──────────────────────────────
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.1-8b-instant';
-
-// ── Gemini (fallback) ───────────────────────────────────────────
-const GEMINI_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent';
 
 const SYSTEM_PROMPT = `You are a restricted AI assistant built into TaskFlow, a personal task management app.
 You must ALWAYS respond with valid JSON only — no markdown, no code fences, no extra text.
@@ -40,30 +35,17 @@ Rules:
 - prompt content: a complete, reusable instruction template
 - ALWAYS return valid JSON. Nothing outside the JSON object.`;
 
-function friendlyError(status: number, provider: 'groq' | 'gemini'): string {
-  if (status === 429) {
-    return provider === 'groq'
-      ? 'Rate limit reached. Please wait a moment and try again.'
-      : 'Rate limit reached on all providers. Please wait a minute and try again.';
-  }
-  if (status === 401 || status === 403) {
-    return `Invalid or unauthorized API key (${provider}). Check your .env file.`;
-  }
-  if (status === 400) {
-    return 'The request was rejected. Try rephrasing your message.';
-  }
-  if (status === 503 || status === 502) {
-    return 'The AI service is temporarily unavailable. Please try again in a moment.';
-  }
-  if (!navigator.onLine) {
-    return 'No internet connection. Check your network and try again.';
-  }
+function friendlyError(status: number): string {
+  if (status === 429) return 'Rate limit reached. Please wait a moment and try again.';
+  if (status === 401 || status === 403) return 'Invalid or unauthorized API key. Check your .env file.';
+  if (status === 400) return 'The request was rejected. Try rephrasing your message.';
+  if (status === 503 || status === 502) return 'The AI service is temporarily unavailable. Please try again in a moment.';
+  if (!navigator.onLine) return 'No internet connection. Check your network and try again.';
   return `Unexpected error (${status}). Please try again.`;
 }
 
 function parseAIResponse(raw: string): { displayMessage: string; creation: PendingCreation | null } {
   try {
-    // Strip accidental markdown code fences if the model adds them
     const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
     const json = JSON.parse(cleaned);
 
@@ -116,44 +98,10 @@ async function callGroq(
     }),
     signal,
   });
-  if (!res.ok) throw Object.assign(new Error('groq'), { status: res.status, provider: 'groq' });
+  if (!res.ok) throw Object.assign(new Error('groq'), { status: res.status });
   const data = await res.json();
   return data?.choices?.[0]?.message?.content ?? '';
 }
-
-async function callGemini(
-  apiKey: string,
-  messages: ChatMessage[],
-  userText: string,
-  signal: AbortSignal
-): Promise<string> {
-  const contents = [
-    ...messages.map(m => ({
-      role: m.role === 'user' ? 'user' : 'model',
-      parts: [{ text: m.content }],
-    })),
-    { role: 'user', parts: [{ text: userText }] },
-  ];
-  const res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents,
-      generationConfig: { maxOutputTokens: 1024, temperature: 0.7 },
-    }),
-    signal,
-  });
-  if (!res.ok) throw Object.assign(new Error('gemini'), { status: res.status, provider: 'gemini' });
-  const data = await res.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-}
-
-// ── Hardcoded Encrypted Fallbacks ───────────────────────────────
-// These are XOR-obfuscated keys that are bundled as internal defaults.
-// (XORed with 'taskflow-ai-architect-2026')
-const BUNDLED_GEMINI = 'NSgJCjUVLUFoCA5ZNytVAT8bFSdEVQZhAE4yCRkaLzwFBn4AWW44';
-const BUNDLED_GROQ = 'ExIYNB8bOBpvFiFOGBgCPVs4LhkGG3FiZXEQGBFYIDU/GWorMB5SPiIpBwIGIhpjQF5KfRA5MBg=';
 
 export function useAIAssistant() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -163,31 +111,16 @@ export function useAIAssistant() {
 
   const sendMessage = useCallback(
     async (userText: string, _contextInfo: string) => {
-      // 1. Try runtime environment variables (unencrypted .env next to EXE)
+      // 1. Try runtime environment variable (.env next to EXE)
       let groqKey = (typeof process !== 'undefined' && process.env.VITE_GROQ_API_KEY) || '';
-      let geminiKey = (typeof process !== 'undefined' && process.env.VITE_GEMINI_API_KEY) || '';
 
-      // 2. Fallback to build-time bundled/encrypted keys (defined via Vite)
+      // 2. Fallback to build-time encrypted key (defined via Vite)
       if (!groqKey && typeof __GROQ_API_KEY__ !== 'undefined' && __GROQ_API_KEY__) {
         groqKey = decrypt(__GROQ_API_KEY__);
       }
-      if (!geminiKey && typeof __GEMINI_API_KEY__ !== 'undefined' && __GEMINI_API_KEY__) {
-        geminiKey = decrypt(__GEMINI_API_KEY__);
-      }
 
-      // 3. Final fallback to hardcoded internal keys (ensures it works in production build)
-      if ((!groqKey || groqKey === 'your_groq_api_key_here') && BUNDLED_GROQ) {
-        groqKey = decrypt(BUNDLED_GROQ);
-      }
-      if ((!geminiKey || geminiKey === 'your_gemini_api_key_here') && BUNDLED_GEMINI) {
-        geminiKey = decrypt(BUNDLED_GEMINI);
-      }
-
-      const hasGroq = groqKey.length > 0 && groqKey !== 'your_groq_api_key_here';
-      const hasGemini = geminiKey.length > 0 && geminiKey !== 'your_gemini_api_key_here';
-
-      if (!hasGroq && !hasGemini) {
-        setError('No API key configured. Add VITE_GROQ_API_KEY or VITE_GEMINI_API_KEY to your .env file and restart the app.');
+      if (!groqKey || groqKey === 'your_groq_api_key_here') {
+        setError('No API key configured. Add VITE_GROQ_API_KEY to your .env file and restart the app.');
         return;
       }
 
@@ -199,38 +132,15 @@ export function useAIAssistant() {
       const timeout = setTimeout(() => controller.abort(), 30_000);
 
       try {
-        let raw: string | null = null;
-
-        if (hasGroq) {
-          try {
-            raw = await callGroq(groqKey, messages, userText, controller.signal);
-          } catch (err: any) {
-            if (err?.name === 'AbortError') throw err;
-          }
-        }
-
-        if (raw === null && hasGemini) {
-          try {
-            raw = await callGemini(geminiKey, messages, userText, controller.signal);
-          } catch (err: any) {
-            if (err?.name === 'AbortError') throw err;
-            throw Object.assign(new Error('all_failed'), { status: err?.status ?? 0, provider: 'gemini' });
-          }
-        }
-
-        if (raw === null) {
-          throw Object.assign(new Error('all_failed'), { status: 429, provider: 'gemini' });
-        }
-
+        const raw = await callGroq(groqKey, messages, userText, controller.signal);
         const { displayMessage, creation } = parseAIResponse(raw);
-
         setMessages(prev => [...prev, { id: `a-${Date.now()}`, role: 'assistant', content: displayMessage }]);
         if (creation) setPendingCreation(creation);
       } catch (err: any) {
         if (err?.name === 'AbortError') {
           setError('Request timed out after 30 seconds. Please try again.');
         } else {
-          setError(friendlyError(err?.status ?? 0, err?.provider ?? 'gemini'));
+          setError(friendlyError(err?.status ?? 0));
         }
       } finally {
         clearTimeout(timeout);

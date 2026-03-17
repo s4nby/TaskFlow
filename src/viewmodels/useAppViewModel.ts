@@ -27,9 +27,8 @@ export const useAppViewModel = () => {
   const [newTaskText, setNewTaskText] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Access Electron IPC
-  // @ts-ignore
-  const ipcRenderer = window.require ? window.require('electron').ipcRenderer : null;
+  // Access Electron IPC via preload contextBridge
+  const ipcRenderer = (window as any).electronAPI ?? null;
 
   const checkForUpdates = useCallback(async () => {
     logInfo('Update check triggered. Current Status: ' + updateStatus);
@@ -83,12 +82,12 @@ export const useAppViewModel = () => {
     }
   }, [ipcRenderer, updateStatus]);
 
-  // Helper for consistent logging
+  // Helper for consistent logging — dev only
   function logInfo(msg: string) {
-    console.log('[Updater UI] ' + msg);
+    if (import.meta.env.DEV) console.log('[Updater UI] ' + msg);
   }
   function logError(msg: string) {
-    console.error('[Updater UI] ' + msg);
+    if (import.meta.env.DEV) console.error('[Updater UI] ' + msg);
   }
 
   // Expose for dev console testing
@@ -120,16 +119,16 @@ export const useAppViewModel = () => {
       ipcRenderer.send('install-update');
     };
 
-    ipcRenderer.on('update-available', onUpdateAvailable);
-    ipcRenderer.on('update-not-available', onUpdateNotAvailable);
-    ipcRenderer.on('update-progress', onUpdateProgress);
-    ipcRenderer.on('update-downloaded', onUpdateDownloaded);
+    const wrappedAvailable = ipcRenderer.on('update-available', onUpdateAvailable);
+    const wrappedNotAvailable = ipcRenderer.on('update-not-available', onUpdateNotAvailable);
+    const wrappedProgress = ipcRenderer.on('update-progress', onUpdateProgress);
+    const wrappedDownloaded = ipcRenderer.on('update-downloaded', onUpdateDownloaded);
 
     return () => {
-      ipcRenderer.removeListener('update-available', onUpdateAvailable);
-      ipcRenderer.removeListener('update-not-available', onUpdateNotAvailable);
-      ipcRenderer.removeListener('update-progress', onUpdateProgress);
-      ipcRenderer.removeListener('update-downloaded', onUpdateDownloaded);
+      ipcRenderer.removeListener('update-available', wrappedAvailable);
+      ipcRenderer.removeListener('update-not-available', wrappedNotAvailable);
+      ipcRenderer.removeListener('update-progress', wrappedProgress);
+      ipcRenderer.removeListener('update-downloaded', wrappedDownloaded);
     };
   }, [ipcRenderer]);
 
@@ -480,6 +479,15 @@ export const useAppViewModel = () => {
     }
   };
 
+  const clearAllData = useCallback(() => {
+    localStorage.removeItem('tasks');
+    localStorage.removeItem('projects');
+    localStorage.removeItem('ai_consent_given');
+    setTasks([]);
+    setProjectLists([]);
+    setActiveListId('hub');
+  }, []);
+
   return useMemo(() => ({
     state: { 
       activeListId, tasks, projectLists: sortedProjectLists, filterDate, viewDate, 
@@ -515,18 +523,19 @@ export const useAppViewModel = () => {
       changeMonth,
       startUpdate,
       installUpdate,
-      checkForUpdates
+      checkForUpdates,
+      clearAllData
     }
   }), [
-    activeListId, tasks, sortedProjectLists, filterDate, viewDate, 
+    activeListId, tasks, sortedProjectLists, filterDate, viewDate,
     isSidebarExpanded, filteredTasks, calendarDays,
     newTaskText, searchTerm, searchResults,
     updateStatus, availableVersion, downloadProgress,
     addTask, createProject, createProjectWithTasks, deleteProject,
-    toggleProjectPreference, updateProjectName, toggleTask, deleteTask, 
-    updateTask, setTaskPriority, addSubTask, toggleSubTask, updateSubTask, 
+    toggleProjectPreference, updateProjectName, toggleTask, deleteTask,
+    updateTask, setTaskPriority, addSubTask, toggleSubTask, updateSubTask,
     mergeTasks, reorderTasks, reorderProjects, changeMonth,
-    startUpdate, installUpdate, checkForUpdates
+    startUpdate, installUpdate, checkForUpdates, clearAllData
   ]);
 };
 

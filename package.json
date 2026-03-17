@@ -4,6 +4,7 @@
   "version": "1.17.3",
   "description": "A high-performance, minimalist to-do list application for Windows.",
   "author": "s4nby <95icarus@gmail.com>",
+  "license": "MIT",
   "type": "module",
   "repository": {
     "type": "git",
@@ -16,7 +17,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
-    "electron:build": "npm run build && electron-builder"
+    "electron:build": "npm run build && node scripts/sign-build.cjs"
   },
   "build": {
     "appId": "com.todolist.app",
@@ -59,7 +60,7 @@
           ]
         }
       ],
-      "verifyUpdateCodeSignature": false
+      "verifyUpdateCodeSignature": true
     },
     "nsis": {
       "oneClick": true,

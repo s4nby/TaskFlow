@@ -36,6 +36,9 @@ Thumbs.db
 newicons
 GEMINI.md
 
+# Code signing certificates (never commit private keys)
+certs/
+
 # Local environment files
 .env
 .env.local

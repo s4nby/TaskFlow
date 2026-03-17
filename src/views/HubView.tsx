@@ -149,6 +149,7 @@ interface HubViewProps {
   updateStatus?: UpdateStatus;
   setUpdateStatus?: (status: UpdateStatus) => void;
   setDownloadProgress?: (progress: number) => void;
+  onClearAllData?: () => void;
 }
 
 const HubView: React.FC<HubViewProps> = ({
@@ -160,8 +161,10 @@ const HubView: React.FC<HubViewProps> = ({
   isAIOpen = false,
   updateStatus = 'none',
   setUpdateStatus,
-  setDownloadProgress
+  setDownloadProgress,
+  onClearAllData,
 }) => {
+  const [showClearConfirm, setShowClearConfirm] = React.useState(false);
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editingName, setEditingName] = React.useState('');
 
@@ -289,6 +292,29 @@ const HubView: React.FC<HubViewProps> = ({
           ))}
         </div>
       </div>
+
+      {!hideActions && onClearAllData && (
+        <div className="hub-danger-zone">
+          {!showClearConfirm ? (
+            <button
+              className="hub-danger-btn"
+              onClick={() => setShowClearConfirm(true)}
+            >
+              Clear all data
+            </button>
+          ) : (
+            <div className="hub-danger-confirm">
+              <span>This will permanently delete all tasks and projects.</span>
+              <button className="hub-danger-confirm-yes" onClick={() => { onClearAllData(); setShowClearConfirm(false); }}>
+                Delete everything
+              </button>
+              <button className="hub-danger-confirm-no" onClick={() => setShowClearConfirm(false)}>
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

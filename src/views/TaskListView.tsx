@@ -174,15 +174,23 @@ const TaskListView: React.FC<TaskListViewProps> = ({
           </button>
         </div>
         
-        <div className={`task-checkbox ${task.completed ? 'completed' : ''}`} onClick={() => handleToggleTask(task.id, task.completed)}>
-          {task.completed && <Check size={12} color="white" />}
+        <div
+          className={`task-checkbox ${task.completed ? 'completed' : ''}`}
+          onClick={() => handleToggleTask(task.id, task.completed)}
+          role="checkbox"
+          aria-checked={task.completed}
+          aria-label={`Mark "${task.text}" as ${task.completed ? 'incomplete' : 'complete'}`}
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') handleToggleTask(task.id, task.completed); }}
+        >
+          {task.completed && <Check size={12} color="white" aria-hidden="true" />}
         </div>
         <div className="task-content" style={{ display: 'flex', flex: 1, alignItems: 'center', gap: '8px' }}>
           {editingId === task.id ? (
-            <AutoExpandingTextarea 
-              className="quick-add-input" 
+            <AutoExpandingTextarea
+              className="quick-add-input"
               style={{ padding: '4px 8px', fontSize: '0.9rem' }}
-              value={editingText} 
+              value={editingText}
               onChange={(e) => setEditingText(e.target.value)}
               onBlur={saveEditing}
               onKeyDown={(e) => {
@@ -192,6 +200,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({
                 }
                 if (e.key === 'Escape') setEditingId(null);
               }}
+              maxLength={2000}
               autoFocus
             />
           ) : (
@@ -291,9 +300,11 @@ const TaskListView: React.FC<TaskListViewProps> = ({
           ))}
           <div className="subtask-add">
             <input 
-              type="text" 
-              placeholder="Add sub-task..." 
+              type="text"
+              placeholder="Add sub-task..."
               className="subtask-input"
+              maxLength={500}
+              aria-label="Add sub-task"
               value={newSubTaskText[task.id] || ''}
               onChange={(e) => setNewSubTaskText({ ...newSubTaskText, [task.id]: e.target.value })}
               onKeyDown={(e) => {
@@ -351,11 +362,12 @@ const TaskListView: React.FC<TaskListViewProps> = ({
             ) : (
               <form className="quick-add-container inline-quick-add" onSubmit={handleAddTask}>
                 <div className="input-group themed-input-container">
-                  <AutoExpandingTextarea 
-                    className="quick-add-input" 
-                    placeholder="What needs to be done?" 
-                    value={newTaskText} 
+                  <AutoExpandingTextarea
+                    className="quick-add-input"
+                    placeholder="What needs to be done?"
+                    value={newTaskText}
                     onChange={(e) => onSetNewTaskText(e.target.value)}
+                    maxLength={2000}
                     onBlur={() => {
                       if (!newTaskText.trim()) setIsAddingTask(false);
                     }}

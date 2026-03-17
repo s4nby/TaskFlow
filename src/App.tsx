@@ -15,10 +15,8 @@ const TaskListView = lazy(() => import('./views/TaskListView'));
 const PromptManagerView = lazy(() => import('./views/PromptManagerView'));
 const ProjectNamingModal = lazy(() => import('./components/ProjectNamingModal'));
 
-// Access Electron modules safely
-// @ts-ignore
-const electron = window.require ? window.require('electron') : null;
-const ipcRenderer = electron ? electron.ipcRenderer : null;
+// Access Electron IPC via preload contextBridge
+const ipcRenderer = (window as any).electronAPI ?? null;
 
 const App: React.FC = () => {
   const { state, commands } = useAppViewModel();
@@ -67,12 +65,12 @@ const App: React.FC = () => {
         commands.setActiveListId(target);
       };
 
-      ipcRenderer.on('global-new-task', handleGlobalNewTask);
-      ipcRenderer.on('navigate', handleNavigate);
+      const wrappedNewTask = ipcRenderer.on('global-new-task', handleGlobalNewTask);
+      const wrappedNavigate = ipcRenderer.on('navigate', handleNavigate);
 
       return () => {
-        ipcRenderer.removeListener('global-new-task', handleGlobalNewTask);
-        ipcRenderer.removeListener('navigate', handleNavigate);
+        ipcRenderer.removeListener('global-new-task', wrappedNewTask);
+        ipcRenderer.removeListener('navigate', wrappedNavigate);
       };
     }
   }, [ipcRenderer, commands.setActiveListId]);
@@ -104,6 +102,7 @@ const App: React.FC = () => {
                   updateStatus={state.updateStatus}
                   setUpdateStatus={commands.setUpdateStatus}
                   setDownloadProgress={commands.setDownloadProgress}
+                  onClearAllData={commands.clearAllData}
                 />
               );
             case 'important':
@@ -305,6 +304,7 @@ const App: React.FC = () => {
                 className="update-btn"
                 onClick={() => { if (ipcRenderer) commands.startUpdate(); }}
                 title={`Update Available (${state.availableVersion}) — Click to install`}
+                aria-label={`Update available: version ${state.availableVersion}. Click to install.`}
               >
                 <svg width="11" height="11" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="5" y1="0.75" x2="5" y2="6.25" />
@@ -314,14 +314,14 @@ const App: React.FC = () => {
               </button>
             )}
             <div className="header-divider" />
-            <button className="glyph-btn" onClick={() => ipcRenderer.send('window-minimize')} title="Minimize">
-              <Minus size={16} strokeWidth={1.5} />
+            <button className="glyph-btn" onClick={() => ipcRenderer.send('window-minimize')} title="Minimize" aria-label="Minimize window">
+              <Minus size={16} strokeWidth={1.5} aria-hidden="true" />
             </button>
-            <button className="glyph-btn" onClick={() => ipcRenderer.send('window-maximize')} title="Maximize">
-              <Square size={14} strokeWidth={1.5} />
+            <button className="glyph-btn" onClick={() => ipcRenderer.send('window-maximize')} title="Maximize" aria-label="Maximize window">
+              <Square size={14} strokeWidth={1.5} aria-hidden="true" />
             </button>
-            <button className="glyph-btn close-glyph" onClick={() => ipcRenderer.send('window-close')} title="Close">
-              <X size={18} strokeWidth={1.5} />
+            <button className="glyph-btn close-glyph" onClick={() => ipcRenderer.send('window-close')} title="Close" aria-label="Close window">
+              <X size={18} strokeWidth={1.5} aria-hidden="true" />
             </button>
           </div>
         </div>

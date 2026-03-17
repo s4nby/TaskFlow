@@ -114,10 +114,11 @@ function createWindow() {
     titleBarStyle: 'hidden',
     icon: windowIcon,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      devTools: true,
+      nodeIntegration: false,
+      contextIsolation: true,
+      devTools: !app.isPackaged,
       backgroundThrottling: false, // Prevent background process categorization
+      preload: path.join(__dirname, 'preload.cjs'),
     },
     backgroundColor: '#050505',
     show: false,
