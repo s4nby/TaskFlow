@@ -7,7 +7,6 @@ import type { PendingCreation } from './hooks/useAIAssistant';
 // MVVM Layers
 import { useAppViewModel } from './viewmodels/useAppViewModel';
 import Sidebar from './views/Sidebar';
-import packageJson from '../package.json';
 
 // Lazy loaded components
 const HubView = lazy(() => import('./views/HubView'));
