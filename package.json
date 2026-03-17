@@ -1,7 +1,7 @@
 {
   "name": "taskflow",
   "private": true,
-  "version": "1.17.1",
+  "version": "1.17.2",
   "description": "A high-performance, minimalist to-do list application for Windows.",
   "author": "s4nby <95icarus@gmail.com>",
   "type": "module",
@@ -27,12 +27,17 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
-      "newicons/**/*",
       "package.json",
       "!dist/**/*.map",
       "!dist-electron",
       "!node_modules/.cache",
       "!**/*.ts"
+    ],
+    "extraResources": [
+      {
+        "from": "icons",
+        "to": "icons"
+      }
     ],
     "extraFiles": [
       {
@@ -45,7 +50,7 @@
     ],
     "asar": true,
     "win": {
-      "icon": "newicons/icon_256x256.png",
+      "icon": "icons/icon_256x256.png",
       "target": [
         {
           "target": "nsis",

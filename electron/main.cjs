@@ -38,16 +38,16 @@ if (!gotLock) {
 
 function createTray() {
   try {
-    // icon_16x16.png in newicons/ folder
-    let iconPath = process.env.NODE_ENV === 'development' 
-      ? path.join(__dirname, '../newicons/icon_16x16.png')
-      : path.join(__dirname, '../newicons/icon_16x16.png');
-    
+    // Resolve icons/ folder — outside asar in production for native image compatibility
+    const iconsDir = app.isPackaged
+      ? path.join(process.resourcesPath, 'icons')
+      : path.join(__dirname, '../icons');
+
+    let iconPath = path.join(iconsDir, 'icon_16x16.png');
+
     // Fallback chain
     if (!fs.existsSync(iconPath)) {
-      // Try 32x32 from newicons
-      const fallbackPath = path.join(__dirname, '../newicons/icon_32x32.png');
-      
+      const fallbackPath = path.join(iconsDir, 'icon_32x32.png');
       if (fs.existsSync(fallbackPath)) {
         iconPath = fallbackPath;
       } else if (process.platform === 'win32') {
@@ -100,7 +100,9 @@ function createWindow() {
   // Remove default menu
   Menu.setApplicationMenu(null);
 
-  const windowIconPath = path.join(__dirname, '../newicons/icon_256x256.png');
+  const windowIconPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'icons', 'icon_256x256.png')
+    : path.join(__dirname, '../icons/icon_256x256.png');
   const windowIcon = fs.existsSync(windowIconPath)
     ? nativeImage.createFromPath(windowIconPath)
     : undefined;
