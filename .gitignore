@@ -31,12 +31,11 @@ Thumbs.db
 *.sln
 *.sw?
 
-# Project-specific ignores
+# Local development assets
 .claude
 newicons
-GEMINI.md
 
-# Code signing certificates (never commit private keys)
+# Code signing certificates
 certs/
 
 # Local environment files
