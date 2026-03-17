@@ -1364,20 +1364,25 @@ animation: fadeIn 0.2s ease-out;
   margin-top: 2px;
 }
 
-.glyph-btn.update-indicator {
-  transition: transform 0.2s; /* Remove color transition for instant state feedback */
+.update-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid #f59e0b;
+  background: transparent;
+  color: #f59e0b;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, transform 0.15s;
+  flex-shrink: 0;
 }
 
-.glyph-btn.update-indicator.available {
-  color: var(--accent-color) !important;
-}
-
-.glyph-btn.update-indicator.ready {
-  color: #10b981 !important; /* Green for ready */
-}
-
-.glyph-btn.update-indicator.error {
-  color: #ef4444 !important; /* Red for error */
+.update-btn:hover {
+  background: rgba(245, 158, 11, 0.15);
+  transform: scale(1.1);
 }
 
 .sidebar-footer {

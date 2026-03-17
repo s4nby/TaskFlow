@@ -108,41 +108,28 @@ export const useAppViewModel = () => {
 
     const onUpdateNotAvailable = () => {
       logInfo('IPC - Update Not Available');
-      // Only reset if we aren't already handling a download/ready state
-      setUpdateStatus(prev => (prev === 'available' || prev === 'error') ? 'none' : prev);
+      setUpdateStatus(prev => prev === 'available' ? 'none' : prev);
     };
 
     const onUpdateProgress = (_event: any, progressObj: any) => {
-      setUpdateStatus('downloading');
       setDownloadProgress(Math.floor(progressObj.percent));
     };
 
     const onUpdateDownloaded = () => {
-      logInfo('IPC - Update Downloaded');
-      setUpdateStatus('ready');
-      setDownloadProgress(100);
-      // Auto install when ready
+      logInfo('IPC - Update Downloaded — triggering silent install');
       ipcRenderer.send('install-update');
-    };
-
-    const onUpdateError = (_event: any, message: string) => {
-      logError('IPC - Update Error: ' + message);
-      setUpdateStatus('error');
-      setDownloadProgress(0);
     };
 
     ipcRenderer.on('update-available', onUpdateAvailable);
     ipcRenderer.on('update-not-available', onUpdateNotAvailable);
     ipcRenderer.on('update-progress', onUpdateProgress);
     ipcRenderer.on('update-downloaded', onUpdateDownloaded);
-    ipcRenderer.on('update-error', onUpdateError);
 
     return () => {
       ipcRenderer.removeListener('update-available', onUpdateAvailable);
       ipcRenderer.removeListener('update-not-available', onUpdateNotAvailable);
       ipcRenderer.removeListener('update-progress', onUpdateProgress);
       ipcRenderer.removeListener('update-downloaded', onUpdateDownloaded);
-      ipcRenderer.removeListener('update-error', onUpdateError);
     };
   }, [ipcRenderer]);
 

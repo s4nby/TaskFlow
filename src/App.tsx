@@ -300,21 +300,13 @@ const App: React.FC = () => {
         {/* RIGHT: WINDOW CONTROLS */}
         <div className="header-right-zone">
           <div className="window-controls-integrated">
-            {state.updateStatus !== 'none' && (
+            {state.updateStatus === 'available' && (
               <button
-                className={`glyph-btn update-indicator ${state.updateStatus}`}
-                onClick={() => {
-                  if (ipcRenderer) {
-                    commands.startUpdate();
-                  }
-                }}
-                title={
-                  state.updateStatus === 'ready' ? 'Restart to Update' :
-                  state.updateStatus === 'error' ? 'Update Failed - Click to Retry' :
-                  `Update Available (${state.availableVersion}) - Click to Update`
-                }
+                className="update-btn"
+                onClick={() => { if (ipcRenderer) commands.startUpdate(); }}
+                title={`Update Available (${state.availableVersion}) — Click to install`}
               >
-                <ArrowDown size={16} />
+                <ArrowDown size={13} />
               </button>
             )}
             <div className="header-divider" />

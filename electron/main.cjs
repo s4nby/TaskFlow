@@ -248,10 +248,7 @@ function createWindow() {
 
       autoUpdater.on('error', (err) => {
         log.error('[Updater] Event: error. Details:', err);
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.show(); // Restore window if update fails
-          mainWindow.webContents.send('update-error', err.message);
-        }
+        // Silent failure — do not surface to the renderer UI
       });
 
       // IPC to trigger download/install
@@ -261,10 +258,7 @@ function createWindow() {
       });
 
       ipcMain.on('start-update', () => {
-        log.info('[Updater] IPC received: start-update. Hiding window for silent update.');
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.hide(); // "Immediate shutdown" feel
-        }
+        log.info('[Updater] IPC received: start-update. Downloading silently.');
         autoUpdater.downloadUpdate();
       });
 
