@@ -301,19 +301,30 @@ input, textarea {
   pointer-events: none;
 }
 
-.sidebar-section-header {
-  padding: 12px 8px 4px 8px;
+.sidebar-section-nav {
+  margin-top: 10px;
+  opacity: 0.5;
   font-size: 0.6rem;
-  font-weight: 400;
-  color: var(--text-secondary);
-  letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
 }
 
-.sidebar-section-header .divider {
-  display: none;
+.sidebar-section-nav:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.sidebar-section-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .entity-delete-trigger {
@@ -1950,5 +1961,143 @@ animation: fadeIn 0.2s ease-out;
 }
 
 .hub-danger-confirm-no:hover { color: var(--text-primary); }
+
+/* ── Naming Modal ────────────────────────────────────────────── */
+.naming-modal {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: #181818;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-standard);
+  padding: 28px;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+  animation: namingModalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes namingModalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.naming-modal--project .naming-modal-icon { color: var(--accent-color); background: rgba(59, 130, 246, 0.1); }
+.naming-modal--prompt  .naming-modal-icon { color: #34a857; background: rgba(34, 122, 57, 0.12); }
+
+.naming-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.naming-modal-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.naming-modal-title {
+  margin: 0 0 2px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+.naming-modal-subtitle {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.naming-modal-field {
+  margin-bottom: 20px;
+}
+
+.naming-modal-label {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.naming-modal-input {
+  width: 100%;
+  padding: 11px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-button);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.naming-modal-input:focus {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.naming-modal--prompt .naming-modal-input:focus {
+  border-color: #34a857;
+  box-shadow: 0 0 0 3px rgba(34, 168, 87, 0.12);
+}
+
+.naming-modal-input--error {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.05) !important;
+}
+
+.naming-modal-error {
+  margin: 6px 0 0 0;
+  font-size: 0.7rem;
+  color: #ef4444;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.naming-modal-footer {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.naming-modal-cancel {
+  flex: 0 0 auto;
+  padding: 9px 16px;
+  font-size: 0.82rem;
+}
+
+.naming-modal-submit {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 16px;
+  background: var(--accent-color);
+  border: none;
+  border-radius: var(--radius-button);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.naming-modal--prompt .naming-modal-submit { background: #227a39; }
+
+.naming-modal-submit:hover { opacity: 0.88; transform: translateY(-1px); }
+.naming-modal-submit:active { transform: translateY(0); }
 
 

@@ -47,18 +47,24 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  const cancelEditing = () => {
-    setEditingId(null);
-  };
+  const cancelEditing = () => setEditingId(null);
 
   const renderListItem = (project: ProjectList) => (
-    <div key={project.id} className={`list-item ${activeListId === project.id ? 'active' : ''}`} onClick={() => onNavigate(project.id)}>
+    <div
+      key={project.id}
+      className={`list-item ${activeListId === project.id ? 'active' : ''}`}
+      onClick={() => onNavigate(project.id)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate(project.id); }}
+      aria-current={activeListId === project.id ? 'page' : undefined}
+    >
       <div className="list-icon">
-        {project.isPreferred ? (
-          <Star size={18} fill="#fbbf24" color="#fbbf24" />
-        ) : (
-          project.type === 'prompt' ? <Scroll size={18} /> : <FolderKanban size={18} />
-        )}
+        {project.isPreferred
+          ? <Star size={15} fill="#fbbf24" color="#fbbf24" aria-hidden="true" />
+          : project.type === 'prompt'
+            ? <Scroll size={15} aria-hidden="true" />
+            : <FolderKanban size={15} aria-hidden="true" />}
       </div>
 
       {showContent && (
@@ -77,6 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               }}
               autoFocus
               onClick={(e) => e.stopPropagation()}
+              aria-label="Rename project"
             />
           ) : (
             <span className="list-name">{project.name}</span>
@@ -85,26 +92,22 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       {showContent && !editingId && (
-        <div className="list-actions" style={{ display: 'flex', gap: '2px' }}>
+        <div className="list-actions">
           <button
             className="entity-delete-trigger task-edit-trigger"
-            onClick={(e) => {
-              e.stopPropagation();
-              startEditing(project);
-            }}
+            onClick={(e) => { e.stopPropagation(); startEditing(project); }}
             title="Rename"
+            aria-label={`Rename ${project.name}`}
           >
-            <Pencil size={12} />
+            <Pencil size={11} aria-hidden="true" />
           </button>
           <button
             className="entity-delete-trigger sidebar-delete-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteProject(project.id);
-            }}
+            onClick={(e) => { e.stopPropagation(); onDeleteProject(project.id); }}
             title="Delete"
+            aria-label={`Delete ${project.name}`}
           >
-            <Trash2 size={12} />
+            <Trash2 size={11} aria-hidden="true" />
           </button>
         </div>
       )}
@@ -113,43 +116,70 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside className={`sidebar ${isExpanded ? 'expanded' : 'collapsed'}`} onTransitionEnd={handleTransitionEnd}>
-      <div className="list-container">
-        <div className={`list-item ${activeListId === 'hub' ? 'active' : ''}`} onClick={() => onNavigate('hub')}>
-          <div className="list-icon"><Layout size={18} /></div>
-          {showContent && (
-            <div className="list-content">
-              <span className="list-name">Dashboard</span>
-            </div>
-          )}
-        </div>
-        <div className={`list-item ${activeListId === 'todo' ? 'active' : ''}`} onClick={() => onNavigate('todo')}>
-          <div className="list-icon"><List size={18} /></div>
-          {showContent && (
-            <div className="list-content">
-              <span className="list-name">Quick to-do list</span>
+      <nav className="list-container" aria-label="Navigation">
 
-            </div>
-          )}
-        </div>
-        <div className={`list-item ${activeListId === 'important' ? 'active' : ''}`} onClick={() => onNavigate('important')}>
-          <div className="list-icon"><Star size={18} /></div>
-          {showContent && (
-            <div className="list-content">
-              <span className="list-name">Favorites</span>
-            </div>
-          )}
+        {/* Core navigation */}
+        <div
+          className={`list-item ${activeListId === 'hub' ? 'active' : ''}`}
+          onClick={() => onNavigate('hub')}
+          role="button" tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('hub'); }}
+          aria-current={activeListId === 'hub' ? 'page' : undefined}
+        >
+          <div className="list-icon"><Layout size={15} aria-hidden="true" /></div>
+          {showContent && <div className="list-content"><span className="list-name">Dashboard</span></div>}
         </div>
 
-        <div className="sidebar-section-header">
-          {showContent ? 'PROJECTS' : <div className="divider" />}
+        <div
+          className={`list-item ${activeListId === 'todo' ? 'active' : ''}`}
+          onClick={() => onNavigate('todo')}
+          role="button" tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('todo'); }}
+          aria-current={activeListId === 'todo' ? 'page' : undefined}
+        >
+          <div className="list-icon"><List size={15} aria-hidden="true" /></div>
+          {showContent && <div className="list-content"><span className="list-name">Quick to-do list</span></div>}
+        </div>
+
+        <div
+          className={`list-item ${activeListId === 'important' ? 'active' : ''}`}
+          onClick={() => onNavigate('important')}
+          role="button" tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('important'); }}
+          aria-current={activeListId === 'important' ? 'page' : undefined}
+        >
+          <div className="list-icon"><Star size={15} aria-hidden="true" /></div>
+          {showContent && <div className="list-content"><span className="list-name">Favorites</span></div>}
+        </div>
+
+        {/* Projects section */}
+        <div
+          className="list-item sidebar-section-nav"
+          onClick={() => onNavigate('hub')}
+          role="button" tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('hub'); }}
+          title="Projects"
+        >
+          <div className="list-icon"><FolderKanban size={13} aria-hidden="true" /></div>
+          {showContent && <span className="sidebar-section-label">Projects</span>}
         </div>
         {projects.map(renderListItem)}
 
-        <div className="sidebar-section-header">
-          {showContent ? 'PROMPT MANAGER' : <div className="divider" />}
+        {/* Prompt Manager section */}
+        <div
+          className="list-item sidebar-section-nav"
+          onClick={() => onNavigate('hub')}
+          role="button" tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('hub'); }}
+          title="Prompt Manager"
+        >
+          <div className="list-icon"><Scroll size={13} aria-hidden="true" /></div>
+          {showContent && <span className="sidebar-section-label">Prompt Manager</span>}
         </div>
         {prompts.map(renderListItem)}
-      </div>
+
+      </nav>
+
       <div className="sidebar-footer">
         <span className="app-version-label">v{packageJson.version}</span>
       </div>
