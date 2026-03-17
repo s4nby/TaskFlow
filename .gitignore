@@ -31,6 +31,11 @@ Thumbs.db
 *.sln
 *.sw?
 
+# Project-specific ignores
+.claude
+newicons
+GEMINI.md
+
 # Local environment files
 .env
 .env.local
