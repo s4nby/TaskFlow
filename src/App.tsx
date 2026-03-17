@@ -1,5 +1,5 @@
 import React, { useState, Suspense, lazy, useEffect, useRef } from 'react';
-import { Minus, Square, X, ArrowDown, Calendar as CalendarIcon, Search, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Minus, Square, X, Calendar as CalendarIcon, Search, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import './styles/main.css';
 import AIAssistantPanel from './components/AIAssistantPanel';
 import type { PendingCreation } from './hooks/useAIAssistant';
@@ -306,7 +306,11 @@ const App: React.FC = () => {
                 onClick={() => { if (ipcRenderer) commands.startUpdate(); }}
                 title={`Update Available (${state.availableVersion}) — Click to install`}
               >
-                <ArrowDown size={13} />
+                <svg width="11" height="11" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="0.75" x2="5" y2="6.25" />
+                  <polyline points="2.5,4.25 5,6.75 7.5,4.25" />
+                  <line x1="1.25" y1="9" x2="8.75" y2="9" />
+                </svg>
               </button>
             )}
             <div className="header-divider" />
