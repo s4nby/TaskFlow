@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { 
-  Layout, List, 
+import React, { useState, useEffect } from 'react';
+import {
+  Layout, List,
   Star, FolderKanban, Trash2, Pencil, Scroll
 } from 'lucide-react';
 import type { ProjectList, ViewState } from '../models/types';
+import packageJson from '../../package.json';
 
 interface SidebarProps {
   isExpanded: boolean;
@@ -14,11 +15,22 @@ interface SidebarProps {
   onRenameProject: (id: string, name: string) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ 
+const Sidebar: React.FC<SidebarProps> = ({
   isExpanded, activeListId, projectLists, onNavigate, onDeleteProject, onRenameProject
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingText] = useState('');
+  const [showContent, setShowContent] = useState(isExpanded);
+
+  useEffect(() => {
+    if (isExpanded) setShowContent(true);
+  }, [isExpanded]);
+
+  const handleTransitionEnd = (e: React.TransitionEvent<HTMLElement>) => {
+    if (e.target === e.currentTarget && e.propertyName === 'width' && !isExpanded) {
+      setShowContent(false);
+    }
+  };
 
   const projects = projectLists.filter(p => !p.type || p.type === 'project');
   const prompts = projectLists.filter(p => p.type === 'prompt');
@@ -48,15 +60,15 @@ const Sidebar: React.FC<SidebarProps> = ({
           project.type === 'prompt' ? <Scroll size={18} /> : <FolderKanban size={18} />
         )}
       </div>
-      
-      {isExpanded && (
+
+      {showContent && (
         <div className="list-content">
           {editingId === project.id ? (
-            <input 
-              type="text" 
-              className="quick-add-input" 
+            <input
+              type="text"
+              className="quick-add-input"
               style={{ padding: '2px 4px', fontSize: '0.85rem', background: 'var(--input-bg)' }}
-              value={editingName} 
+              value={editingName}
               onChange={(e) => setEditingText(e.target.value)}
               onBlur={saveEditing}
               onKeyDown={(e) => {
@@ -72,10 +84,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
       )}
 
-      {isExpanded && !editingId && (
+      {showContent && !editingId && (
         <div className="list-actions" style={{ display: 'flex', gap: '2px' }}>
-          <button 
-            className="entity-delete-trigger task-edit-trigger" 
+          <button
+            className="entity-delete-trigger task-edit-trigger"
             onClick={(e) => {
               e.stopPropagation();
               startEditing(project);
@@ -84,8 +96,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           >
             <Pencil size={12} />
           </button>
-          <button 
-            className="entity-delete-trigger sidebar-delete-btn" 
+          <button
+            className="entity-delete-trigger sidebar-delete-btn"
             onClick={(e) => {
               e.stopPropagation();
               onDeleteProject(project.id);
@@ -100,11 +112,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   );
 
   return (
-    <aside className={`sidebar ${isExpanded ? 'expanded' : 'collapsed'}`}>
+    <aside className={`sidebar ${isExpanded ? 'expanded' : 'collapsed'}`} onTransitionEnd={handleTransitionEnd}>
       <div className="list-container">
         <div className={`list-item ${activeListId === 'hub' ? 'active' : ''}`} onClick={() => onNavigate('hub')}>
           <div className="list-icon"><Layout size={18} /></div>
-          {isExpanded && (
+          {showContent && (
             <div className="list-content">
               <span className="list-name">Dashboard</span>
             </div>
@@ -112,7 +124,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
         <div className={`list-item ${activeListId === 'todo' ? 'active' : ''}`} onClick={() => onNavigate('todo')}>
           <div className="list-icon"><List size={18} /></div>
-          {isExpanded && (
+          {showContent && (
             <div className="list-content">
               <span className="list-name">Quick to-do list</span>
 
@@ -121,22 +133,25 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
         <div className={`list-item ${activeListId === 'important' ? 'active' : ''}`} onClick={() => onNavigate('important')}>
           <div className="list-icon"><Star size={18} /></div>
-          {isExpanded && (
+          {showContent && (
             <div className="list-content">
               <span className="list-name">Favorites</span>
             </div>
           )}
         </div>
-        
+
         <div className="sidebar-section-header">
-          {isExpanded ? 'PROJECTS' : <div className="divider" />}
+          {showContent ? 'PROJECTS' : <div className="divider" />}
         </div>
         {projects.map(renderListItem)}
 
         <div className="sidebar-section-header">
-          {isExpanded ? 'PROMPT MANAGER' : <div className="divider" />}
+          {showContent ? 'PROMPT MANAGER' : <div className="divider" />}
         </div>
         {prompts.map(renderListItem)}
+      </div>
+      <div className="sidebar-footer">
+        <span className="app-version-label">v{packageJson.version}</span>
       </div>
     </aside>
   );

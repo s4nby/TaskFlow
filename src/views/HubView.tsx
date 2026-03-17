@@ -207,7 +207,7 @@ const HubView: React.FC<HubViewProps> = ({
             if (e.detail === 7) cycleUpdater(); 
           }}
         >
-          <h1 style={{ fontSize: '1.5rem' }}>{title}</h1>
+          <h1>{title}</h1>
           <p>{hideActions ? 'Your curated list of starred workspaces' : 'Manage your active project landscapes'}</p>
         </div>
         {onOpenAI && (

@@ -1,5 +1,5 @@
-import React, { useState, Suspense, lazy, useEffect, useRef, useCallback } from 'react';
-import { Minus, Square, X, Menu, ChevronLeft, Sun, Moon, Monitor, ArrowDown, Calendar as CalendarIcon, Search } from 'lucide-react';
+import React, { useState, Suspense, lazy, useEffect, useRef } from 'react';
+import { Minus, Square, X, ArrowDown, Calendar as CalendarIcon, Search, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import './styles/main.css';
 import AIAssistantPanel from './components/AIAssistantPanel';
 import type { PendingCreation } from './hooks/useAIAssistant';
@@ -79,13 +79,6 @@ const App: React.FC = () => {
   }, [ipcRenderer, commands.setActiveListId]);
 
   const activeProject = state.projectLists.find(p => p.id === state.activeListId);
-
-  const toggleTheme = useCallback(() => {
-    const modes: ('system' | 'light' | 'dark')[] = ['system', 'light', 'dark'];
-    const currentIndex = modes.indexOf(state.themeMode);
-    const nextIndex = (currentIndex + 1) % modes.length;
-    commands.setThemeMode(modes[nextIndex]);
-  }, [state.themeMode, commands.setThemeMode]);
 
   const renderActiveView = () => {
     return (
@@ -206,7 +199,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div id="app-wrapper" className={state.theme === 'light' ? 'light-theme' : ''}>
+    <div id="app-wrapper">
       {/* SEARCH OVERLAY */}
       {isSearchOpen && (
         <div className="search-overlay" onClick={() => {
@@ -220,7 +213,7 @@ const App: React.FC = () => {
                 ref={searchInputRef}
                 type="text"
                 className="search-input"
-                placeholder="Search tasks and projects... (Esc to close)"
+                placeholder="Search tasks and projects..."
                 value={state.searchTerm}
                 onChange={(e) => commands.setSearchTerm(e.target.value)}
               />
@@ -272,14 +265,18 @@ const App: React.FC = () => {
       <div className="unified-header">
         {/* LEFT: SIDEBAR CONTROLS */}
         <div className="header-left-zone">
-          <img src="icon_32x32.png" className="app-header-icon" alt="taskflow" />
-          <button 
-            className="header-icon-btn" 
+          <div
+            className="app-icon-toggle"
             onClick={() => commands.setIsSidebarExpanded(!state.isSidebarExpanded)}
             title={state.isSidebarExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
           >
-            {state.isSidebarExpanded ? <ChevronLeft size={20} /> : <Menu size={20} />}
-          </button>
+            <img src="icon_32x32.png" className="app-header-icon" alt="taskflow" />
+            <div className="app-icon-hint">
+              {state.isSidebarExpanded
+                ? <PanelLeftClose size={13} />
+                : <PanelLeftOpen size={13} />}
+            </div>
+          </div>
           <button 
             className={`header-icon-btn ${state.activeListId === 'calendar' ? 'active' : ''}`} 
             onClick={() => {
@@ -288,14 +285,14 @@ const App: React.FC = () => {
             }}
             title="Calendar"
           >
-            <CalendarIcon size={18} />
+            <CalendarIcon size={16} />
           </button>
           <button
             className={`header-icon-btn ${isSearchOpen ? 'active' : ''}`}
             onClick={() => setIsSearchOpen(true)}
             title="Search (Ctrl+F)"
           >
-            <Search size={18} />
+            <Search size={15} />
           </button>
           <div className="header-divider" />
           <div className="header-branding">taskflow</div>
@@ -320,13 +317,7 @@ const App: React.FC = () => {
               >
                 <ArrowDown size={16} />
               </button>
-            )}            <button 
-              className="glyph-btn" 
-              onClick={toggleTheme} 
-              title={`Theme: ${state.themeMode.charAt(0).toUpperCase() + state.themeMode.slice(1)}`}
-            >
-              {state.themeMode === 'system' ? <Monitor size={16} /> : state.themeMode === 'light' ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
+            )}
             <div className="header-divider" />
             <button className="glyph-btn" onClick={() => ipcRenderer.send('window-minimize')} title="Minimize">
               <Minus size={16} strokeWidth={1.5} />
@@ -362,8 +353,6 @@ const App: React.FC = () => {
         </main>
       </div>
 
-      <div className="app-version-label">v{packageJson.version}</div>
-
       <AIAssistantPanel
         isOpen={isAIOpen}
         onClose={() => setIsAIOpen(false)}
@@ -390,19 +379,6 @@ const App: React.FC = () => {
           }}
           onCreate={(name) => {
             commands.createProject(name, selectedCreationDate, namingType);
-            
-            // Only redirect if created from Calendar View (selectedCreationDate is set)
-            if (selectedCreationDate) {
-              // We need to wait for the next render or use the ID we just generated
-              // Since createProject in useAppViewModel also uses Date.now().toString()
-              // but it's internal, let's keep it simple: 
-              // If the user is on dashboard, they stay there.
-              // If they are on calendar, we want them to go to the project.
-              // Actually, useAppViewModel generates the ID internally. 
-              // To be safe and stay on Dashboard as requested, we just don't set active ID here.
-              // If we REALLY need to redirect from Calendar, we'd need useAppViewModel to return the ID.
-            }
-
             setIsNamingModalOpen(false);
             setSelectedCreationDate(undefined);
             setNamingType('project');

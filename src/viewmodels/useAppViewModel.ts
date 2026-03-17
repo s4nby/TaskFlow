@@ -17,10 +17,6 @@ export const useAppViewModel = () => {
   const [viewDate, setViewDate] = useState(new Date());
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   
-  const [themeMode, setThemeMode] = useState<'system' | 'light' | 'dark'>(() => {
-    return (localStorage.getItem('themeMode') as 'system' | 'light' | 'dark') || 'system';
-  });
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
   // Update management state
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('none');
@@ -151,32 +147,6 @@ export const useAppViewModel = () => {
   }, [ipcRenderer]);
 
   useEffect(() => {
-    const initTheme = async () => {
-      if (ipcRenderer) {
-        const systemTheme = await ipcRenderer.invoke('get-system-theme');
-        if (themeMode === 'system') {
-          setTheme(systemTheme);
-        } else {
-          setTheme(themeMode);
-        }
-
-        const onSystemThemeUpdated = (_event: any, newTheme: 'light' | 'dark') => {
-          setThemeMode(prev => {
-            if (prev === 'system') setTheme(newTheme);
-            return prev;
-          });
-        };
-
-        ipcRenderer.on('system-theme-updated', onSystemThemeUpdated);
-        return () => {
-          ipcRenderer.removeListener('system-theme-updated', onSystemThemeUpdated);
-        };
-      }
-    };
-    initTheme();
-  }, [ipcRenderer, themeMode]);
-
-  useEffect(() => {
     const handleOnline = () => {
       logInfo('Connectivity restored. Re-checking for updates...');
       checkForUpdates();
@@ -187,10 +157,6 @@ export const useAppViewModel = () => {
       window.removeEventListener('online', handleOnline);
     };
   }, [checkForUpdates]);
-
-  useEffect(() => {
-    localStorage.setItem('themeMode', themeMode);
-  }, [themeMode]);
 
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
@@ -532,7 +498,6 @@ export const useAppViewModel = () => {
       activeListId, tasks, projectLists: sortedProjectLists, filterDate, viewDate, 
       isSidebarExpanded, filteredTasks, calendarDays,
       newTaskText, searchTerm, searchResults,
-      theme, themeMode,
       updateStatus, availableVersion, downloadProgress
     },
     commands: { 
@@ -561,7 +526,6 @@ export const useAppViewModel = () => {
       reorderTasks,
       reorderProjects,
       changeMonth,
-      setThemeMode,
       startUpdate,
       installUpdate,
       checkForUpdates
@@ -570,12 +534,11 @@ export const useAppViewModel = () => {
     activeListId, tasks, sortedProjectLists, filterDate, viewDate, 
     isSidebarExpanded, filteredTasks, calendarDays,
     newTaskText, searchTerm, searchResults,
-    theme, themeMode,
     updateStatus, availableVersion, downloadProgress,
     addTask, createProject, createProjectWithTasks, deleteProject,
     toggleProjectPreference, updateProjectName, toggleTask, deleteTask, 
     updateTask, setTaskPriority, addSubTask, toggleSubTask, updateSubTask, 
-    mergeTasks, reorderTasks, reorderProjects, changeMonth, setThemeMode, 
+    mergeTasks, reorderTasks, reorderProjects, changeMonth,
     startUpdate, installUpdate, checkForUpdates
   ]);
 };
