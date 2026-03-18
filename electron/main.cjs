@@ -262,13 +262,21 @@ function createWindow() {
       });
 
       ipcMain.on('start-update', () => {
-        log.info('[Updater] IPC received: start-update. Downloading silently.');
-        autoUpdater.downloadUpdate().catch(err => {
-          log.error('[Updater] downloadUpdate error:', err);
-          if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.webContents.send('update-error', err.message);
-          }
-        });
+        log.info('[Updater] IPC received: start-update. Checking then downloading.');
+        autoUpdater.checkForUpdates()
+          .then((result) => {
+            if (result && result.updateInfo) {
+              log.info('[Updater] start-update: update confirmed, starting download.');
+              return autoUpdater.downloadUpdate();
+            }
+            log.warn('[Updater] start-update: no update info available, cannot download.');
+          })
+          .catch(err => {
+            log.error('[Updater] start-update error:', err);
+            if (mainWindow && !mainWindow.isDestroyed()) {
+              mainWindow.webContents.send('update-error', err.message);
+            }
+          });
       });
 
       let installingUpdate = false;

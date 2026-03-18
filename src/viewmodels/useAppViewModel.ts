@@ -67,10 +67,16 @@ export const useAppViewModel = () => {
         
         const newer = isNewer(latestVersion, currentVersion);
         
-        if (newer && updateStatus === 'none') {
-          logInfo('Manual Check - Update Available! Showing indicator.');
-          setAvailableVersion(latestVersion);
-          setUpdateStatus('available');
+        if (newer) {
+          setUpdateStatus(prev => {
+            if (prev === 'none') {
+              logInfo('Manual Check - Update Available! Showing indicator.');
+              setAvailableVersion(latestVersion);
+              return 'available';
+            }
+            logInfo('Manual Check - No newer version found or already handling update.');
+            return prev;
+          });
         } else {
           logInfo('Manual Check - No newer version found or already handling update.');
         }
@@ -80,7 +86,7 @@ export const useAppViewModel = () => {
     } catch (err) {
       logError('Manual Update Check Failed: ' + err);
     }
-  }, [ipcRenderer, updateStatus]);
+  }, [ipcRenderer]);
 
   // Helper for consistent logging — dev only
   function logInfo(msg: string) {
@@ -99,7 +105,7 @@ export const useAppViewModel = () => {
   useEffect(() => {
     if (!ipcRenderer) return;
 
-    const onUpdateAvailable = (_event: any, version: string) => {
+    const onUpdateAvailable = (version: string) => {
       logInfo('IPC - Update Available: ' + version);
       setAvailableVersion(version);
       setUpdateStatus('available');
@@ -110,8 +116,8 @@ export const useAppViewModel = () => {
       setUpdateStatus(prev => prev === 'available' ? 'none' : prev);
     };
 
-    const onUpdateProgress = (_event: any, progressObj: any) => {
-      setDownloadProgress(Math.floor(progressObj.percent));
+    const onUpdateProgress = (progressObj: any) => {
+      setDownloadProgress(Math.floor(progressObj?.percent ?? 0));
     };
 
     const onUpdateDownloaded = () => {
