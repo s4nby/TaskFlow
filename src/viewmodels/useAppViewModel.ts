@@ -119,16 +119,23 @@ export const useAppViewModel = () => {
       setUpdateStatus('ready');
     };
 
+    const onUpdateError = (message: string) => {
+      logError('IPC - Update Error: ' + message);
+      setUpdateStatus('available'); // reset so user can retry
+    };
+
     const wrappedAvailable = ipcRenderer.on('update-available', onUpdateAvailable);
     const wrappedNotAvailable = ipcRenderer.on('update-not-available', onUpdateNotAvailable);
     const wrappedProgress = ipcRenderer.on('update-progress', onUpdateProgress);
     const wrappedDownloaded = ipcRenderer.on('update-downloaded', onUpdateDownloaded);
+    const wrappedError = ipcRenderer.on('update-error', onUpdateError);
 
     return () => {
       ipcRenderer.removeListener('update-available', wrappedAvailable);
       ipcRenderer.removeListener('update-not-available', wrappedNotAvailable);
       ipcRenderer.removeListener('update-progress', wrappedProgress);
       ipcRenderer.removeListener('update-downloaded', wrappedDownloaded);
+      ipcRenderer.removeListener('update-error', wrappedError);
     };
   }, [ipcRenderer]);
 
@@ -469,6 +476,7 @@ export const useAppViewModel = () => {
 
   const startUpdate = () => {
     if (ipcRenderer && updateStatus === 'available') {
+      setUpdateStatus('downloading');
       ipcRenderer.send('start-update');
     }
   };

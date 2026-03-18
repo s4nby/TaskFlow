@@ -250,7 +250,9 @@ function createWindow() {
 
       autoUpdater.on('error', (err) => {
         log.error('[Updater] Event: error. Details:', err);
-        // Silent failure — do not surface to the renderer UI
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('update-error', err.message);
+        }
       });
 
       // IPC to trigger download/install
@@ -261,7 +263,12 @@ function createWindow() {
 
       ipcMain.on('start-update', () => {
         log.info('[Updater] IPC received: start-update. Downloading silently.');
-        autoUpdater.downloadUpdate();
+        autoUpdater.downloadUpdate().catch(err => {
+          log.error('[Updater] downloadUpdate error:', err);
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('update-error', err.message);
+          }
+        });
       });
 
       let installingUpdate = false;

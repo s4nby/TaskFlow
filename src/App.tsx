@@ -299,29 +299,39 @@ const App: React.FC = () => {
         {/* RIGHT: WINDOW CONTROLS */}
         <div className="header-right-zone">
           <div className="window-controls-integrated">
-            {(state.updateStatus === 'available' || state.updateStatus === 'ready') && (
-              <button
-                className="update-btn"
-                onClick={() => {
-                  if (!ipcRenderer) return;
-                  if (state.updateStatus === 'ready') commands.installUpdate();
-                  else commands.startUpdate();
-                }}
-                title={state.updateStatus === 'ready'
-                  ? `Update ready (${state.availableVersion}) — Click to restart and install`
-                  : `Update available (${state.availableVersion}) — Click to download`}
-                aria-label={state.updateStatus === 'ready'
-                  ? `Update ready: version ${state.availableVersion}. Click to restart and install.`
-                  : `Update available: version ${state.availableVersion}. Click to download.`}
-              >
-                <svg width="11" height="11" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="5" y1="0.75" x2="5" y2="6.25" />
-                  <polyline points="2.5,4.25 5,6.75 7.5,4.25" />
-                  <line x1="1.25" y1="9" x2="8.75" y2="9" />
-                </svg>
-              </button>
+            {(state.updateStatus === 'available' || state.updateStatus === 'downloading' || state.updateStatus === 'ready') && (
+              <>
+                <button
+                  className={`update-btn${state.updateStatus === 'downloading' ? ' downloading' : ''}`}
+                  disabled={state.updateStatus === 'downloading'}
+                  onClick={() => {
+                    if (!ipcRenderer) return;
+                    if (state.updateStatus === 'ready') commands.installUpdate();
+                    else if (state.updateStatus === 'available') commands.startUpdate();
+                  }}
+                  title={
+                    state.updateStatus === 'ready'
+                      ? `Update ready (${state.availableVersion}) — Click to restart and install`
+                      : state.updateStatus === 'downloading'
+                      ? `Downloading update… ${state.downloadProgress}%`
+                      : `Update available (${state.availableVersion}) — Click to download`
+                  }
+                  aria-label={
+                    state.updateStatus === 'ready'
+                      ? `Update ready: version ${state.availableVersion}. Click to restart and install.`
+                      : state.updateStatus === 'downloading'
+                      ? `Downloading update ${state.downloadProgress}%`
+                      : `Update available: version ${state.availableVersion}. Click to download.`
+                  }
+                >
+                  <svg className={state.updateStatus === 'downloading' ? 'anim-bounce' : ''} width="14" height="14" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <line x1="5" y1="1" x2="5" y2="7.5" />
+                    <polyline points="2,5 5,8.5 8,5" />
+                  </svg>
+                </button>
+                <div className="update-divider" />
+              </>
             )}
-            <div className="header-divider" />
             <button className="glyph-btn" onClick={() => ipcRenderer.send('window-minimize')} title="Minimize" aria-label="Minimize window">
               <Minus size={16} strokeWidth={1.5} aria-hidden="true" />
             </button>
