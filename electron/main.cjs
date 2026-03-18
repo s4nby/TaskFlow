@@ -286,6 +286,13 @@ function createWindow() {
     }
   });
 
+  // Open external URLs in the default browser
+  ipcMain.on('open-external', (_, url) => {
+    if (typeof url === 'string' && (url.startsWith('https://') || url.startsWith('http://') || url.startsWith('mailto:'))) {
+      shell.openExternal(url);
+    }
+  });
+
   // Window control IPC handlers
   ipcMain.on('window-minimize', () => mainWindow.minimize());
   ipcMain.on('window-maximize', () => mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize());

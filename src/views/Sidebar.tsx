@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Layout, List,
-  Star, FolderKanban, Trash2, Pencil, Scroll
+  Star, FolderKanban, Trash2, Pencil, Scroll, Info
 } from 'lucide-react';
 import type { ProjectList, ViewState } from '../models/types';
 import packageJson from '../../package.json';
@@ -160,6 +160,16 @@ const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       <div className="sidebar-footer">
+        {showContent && (
+          <button
+            className={`sidebar-info-btn${activeListId === 'about' ? ' active' : ''}`}
+            onClick={() => onNavigate('about')}
+            title="About TaskFlow"
+            aria-label="About TaskFlow"
+          >
+            <Info size={16} aria-hidden="true" />
+          </button>
+        )}
         <span className="app-version-label">v{packageJson.version}</span>
       </div>
     </aside>

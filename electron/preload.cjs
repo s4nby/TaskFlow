@@ -7,6 +7,7 @@ const SEND_CHANNELS = [
   'check-for-updates',
   'start-update',
   'install-update',
+  'open-external',
 ];
 
 const RECEIVE_CHANNELS = [

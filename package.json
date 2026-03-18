@@ -1,7 +1,7 @@
 {
   "name": "taskflow",
   "private": true,
-  "version": "1.17.6",
+  "version": "1.17.7",
   "description": "A high-performance, minimalist to-do list application for Windows.",
   "author": "s4nby <95icarus@gmail.com>",
   "license": "MIT",
@@ -65,11 +65,11 @@
     "nsis": {
       "oneClick": true,
       "perMachine": false,
-      "allowElevation": false,
+      "allowElevation": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "TaskFlow",
-      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "artifactName": "taskflow_setup.${ext}",
       "uninstallDisplayName": "TaskFlow",
       "runAfterFinish": true
     },

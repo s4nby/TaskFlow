@@ -14,6 +14,7 @@ const CalendarView = lazy(() => import('./views/CalendarView'));
 const TaskListView = lazy(() => import('./views/TaskListView'));
 const PromptManagerView = lazy(() => import('./views/PromptManagerView'));
 const ProjectNamingModal = lazy(() => import('./components/ProjectNamingModal'));
+const AboutView = lazy(() => import('./views/AboutView'));
 
 // Access Electron IPC via preload contextBridge
 const ipcRenderer = (window as any).electronAPI ?? null;
@@ -82,6 +83,8 @@ const App: React.FC = () => {
       <Suspense fallback={<div className="standard-page">Loading...</div>}>
         {(() => {
           switch (state.activeListId) {
+            case 'about':
+              return <AboutView />;
             case 'hub':
               return (
                 <HubView
