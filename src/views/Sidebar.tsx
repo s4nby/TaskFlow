@@ -32,8 +32,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  const projects = projectLists.filter(p => !p.type || p.type === 'project');
-  const prompts = projectLists.filter(p => p.type === 'prompt');
+  const history = [...projectLists].sort((a, b) =>
+    b.createdDate.localeCompare(a.createdDate)
+  );
 
   const startEditing = (project: ProjectList) => {
     setEditingId(project.id);
@@ -152,31 +153,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           {showContent && <div className="list-content"><span className="list-name">Favorites</span></div>}
         </div>
 
-        {/* Projects section */}
-        <div
-          className="list-item sidebar-section-nav"
-          onClick={() => onNavigate('hub')}
-          role="button" tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('hub'); }}
-          title="Projects"
-        >
-          <div className="list-icon"><FolderKanban size={13} aria-hidden="true" /></div>
-          {showContent && <span className="sidebar-section-label">Projects</span>}
-        </div>
-        {projects.map(renderListItem)}
-
-        {/* Prompt Manager section */}
-        <div
-          className="list-item sidebar-section-nav"
-          onClick={() => onNavigate('hub')}
-          role="button" tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('hub'); }}
-          title="Prompt Manager"
-        >
-          <div className="list-icon"><Scroll size={13} aria-hidden="true" /></div>
-          {showContent && <span className="sidebar-section-label">Prompt Manager</span>}
-        </div>
-        {prompts.map(renderListItem)}
+        {/* History */}
+        {history.length > 0 && <div className="sidebar-history-divider" />}
+        {history.map(renderListItem)}
 
       </nav>
 

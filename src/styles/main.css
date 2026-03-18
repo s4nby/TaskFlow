@@ -301,30 +301,10 @@ input, textarea {
   pointer-events: none;
 }
 
-.sidebar-section-nav {
-  margin-top: 10px;
-  opacity: 0.5;
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-.sidebar-section-nav:hover {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-primary);
-}
-
-.sidebar-section-label {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.sidebar-history-divider {
+  height: 1px;
+  background: var(--glass-border);
+  margin: 8px 6px;
 }
 
 .entity-delete-trigger {
