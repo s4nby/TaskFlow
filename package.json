@@ -63,9 +63,11 @@
       "verifyUpdateCodeSignature": false
     },
     "nsis": {
-      "oneClick": true,
-      "perMachine": false,
+      "oneClick": false,
+      "perMachine": true,
       "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "license": "build/license.rtf",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "TaskFlow",
