@@ -721,12 +721,12 @@ input, textarea {
 }
 
 .prompt-content {
-  font-family: 'Fira Code', 'Fira Mono', monospace !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.875rem;
   white-space: pre-wrap !important;
   word-break: break-word;
   line-height: 1.7;
-  font-variant-ligatures: contextual;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.1px;
 }
 
 .prompt-body-container {
@@ -754,18 +754,20 @@ input, textarea {
 .prompt-label {
   display: inline-flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--glass-border);
-  border-radius: 6px;
-  padding: 2px 10px;
-  font-size: 0.9rem;
-  font-weight: 400;
-  color: var(--text-primary);
-  max-width: 100%;
+  background: rgba(34, 122, 57, 0.08);
+  border: 1px solid rgba(34, 122, 57, 0.22);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: 'Fira Code', 'Fira Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  color: #34a857;
+  max-width: 240px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  height: 24px;
+  flex-shrink: 0;
 }
 
 .copy-success {
@@ -1998,57 +2000,61 @@ animation: fadeIn 0.2s ease-out;
 .naming-modal {
   position: relative;
   width: 100%;
-  max-width: 440px;
-  background: #181818;
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-standard);
-  padding: 28px;
-  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
-  animation: namingModalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 380px;
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 20px 22px 22px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+  animation: namingModalIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes namingModalIn {
-  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  from { opacity: 0; transform: scale(0.97) translateY(6px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
-
-.naming-modal--project .naming-modal-icon { color: var(--accent-color); background: rgba(59, 130, 246, 0.1); }
-.naming-modal--prompt  .naming-modal-icon { color: #34a857; background: rgba(34, 122, 57, 0.12); }
 
 .naming-modal-header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 24px;
+  justify-content: space-between;
+  margin-bottom: 18px;
 }
 
-.naming-modal-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+.naming-modal-title-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  gap: 7px;
 }
+
+.naming-modal--project .naming-modal-title-row { color: var(--accent-color); }
+.naming-modal--prompt  .naming-modal-title-row { color: #34a857; }
 
 .naming-modal-title {
-  margin: 0 0 2px 0;
-  font-size: 1rem;
+  margin: 0;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-primary);
-  letter-spacing: -0.3px;
+  letter-spacing: -0.2px;
 }
 
-.naming-modal-subtitle {
-  margin: 0;
-  font-size: 0.72rem;
+.naming-modal-close {
+  background: transparent;
+  border: none;
   color: var(--text-secondary);
-  line-height: 1.4;
+  cursor: pointer;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  opacity: 0.5;
+  transition: opacity 0.15s;
 }
+
+.naming-modal-close:hover { opacity: 1; }
 
 .naming-modal-field {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .naming-modal-label {
@@ -2058,79 +2064,85 @@ animation: fadeIn 0.2s ease-out;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .naming-modal-input {
   width: 100%;
-  padding: 11px 14px;
+  padding: 9px 12px;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-button);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-family: inherit;
   outline: none;
   box-sizing: border-box;
-  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .naming-modal-input:focus {
-  background: rgba(255, 255, 255, 0.07);
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
 }
 
 .naming-modal--prompt .naming-modal-input:focus {
   border-color: #34a857;
-  box-shadow: 0 0 0 3px rgba(34, 168, 87, 0.12);
+  box-shadow: 0 0 0 2px rgba(34, 168, 87, 0.12);
 }
 
 .naming-modal-input--error {
   border-color: #ef4444 !important;
-  background: rgba(239, 68, 68, 0.05) !important;
 }
 
 .naming-modal-error {
-  margin: 6px 0 0 0;
-  font-size: 0.7rem;
+  margin: 5px 0 0;
+  font-size: 0.68rem;
   color: #ef4444;
   animation: fadeIn 0.15s ease-out;
 }
 
 .naming-modal-footer {
   display: flex;
-  gap: 10px;
-  margin-top: 24px;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 20px;
 }
 
 .naming-modal-cancel {
-  flex: 0 0 auto;
-  padding: 9px 16px;
-  font-size: 0.82rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.naming-modal-cancel:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .naming-modal-submit {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 9px 16px;
   background: var(--accent-color);
   border: none;
-  border-radius: var(--radius-button);
+  border-radius: 6px;
   color: #fff;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 500;
+  font-family: inherit;
+  padding: 7px 16px;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.15s;
+  transition: opacity 0.15s;
 }
 
 .naming-modal--prompt .naming-modal-submit { background: #227a39; }
 
-.naming-modal-submit:hover { opacity: 0.88; transform: translateY(-1px); }
-.naming-modal-submit:active { transform: translateY(0); }
+.naming-modal-submit:hover { opacity: 0.85; }
+.naming-modal-submit:active { opacity: 0.75; }
 
 /* ── ABOUT VIEW ─────────────────────────────────────────── */
 .about-view {

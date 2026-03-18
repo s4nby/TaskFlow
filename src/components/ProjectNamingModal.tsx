@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { X, FolderKanban, Scroll, ArrowRight } from 'lucide-react';
+import { X, FolderKanban, Scroll } from 'lucide-react';
 
 interface ProjectNamingModalProps {
   isOpen: boolean;
@@ -42,22 +42,17 @@ const ProjectNamingModal: React.FC<ProjectNamingModalProps> = ({ isOpen, type = 
   return (
     <div className="modal-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label={isPrompt ? 'Create prompt group' : 'Create workspace'}>
       <div className={`naming-modal ${isPrompt ? 'naming-modal--prompt' : 'naming-modal--project'}`} onClick={e => e.stopPropagation()}>
-        <button className="modal-close-btn" onClick={onClose} title="Close" aria-label="Close">
-          <X size={16} aria-hidden="true" />
-        </button>
 
         <div className="naming-modal-header">
-          <div className="naming-modal-icon">
-            {isPrompt ? <Scroll size={20} aria-hidden="true" /> : <FolderKanban size={20} aria-hidden="true" />}
-          </div>
-          <div>
+          <div className="naming-modal-title-row">
+            {isPrompt ? <Scroll size={13} aria-hidden="true" /> : <FolderKanban size={13} aria-hidden="true" />}
             <h3 className="naming-modal-title">
               {isPrompt ? 'New Prompt Group' : 'New Workspace'}
             </h3>
-            <p className="naming-modal-subtitle">
-              {isPrompt ? 'Categorize your reusable instructions' : 'Define the scope of your next project'}
-            </p>
           </div>
+          <button className="naming-modal-close" onClick={onClose} title="Close" aria-label="Close">
+            <X size={13} aria-hidden="true" />
+          </button>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -84,12 +79,11 @@ const ProjectNamingModal: React.FC<ProjectNamingModalProps> = ({ isOpen, type = 
           </div>
 
           <div className="naming-modal-footer">
-            <button type="button" className="themed-secondary-btn naming-modal-cancel" onClick={onClose}>
+            <button type="button" className="naming-modal-cancel" onClick={onClose}>
               Cancel
             </button>
             <button type="submit" className="naming-modal-submit">
-              <span>{isPrompt ? 'Create Group' : 'Initialize'}</span>
-              <ArrowRight size={15} aria-hidden="true" />
+              {isPrompt ? 'Create Group' : 'Initialize'}
             </button>
           </div>
         </form>

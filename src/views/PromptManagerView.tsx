@@ -174,14 +174,14 @@ const PromptManagerView: React.FC<PromptManagerViewProps> = ({
                       <input 
                         type="text"
                         className="quick-add-input"
-                        style={{ padding: '4px 8px', fontSize: '0.95rem', fontWeight: 700, background: 'var(--input-bg)' }}
+                        style={{ padding: '4px 8px', fontSize: '0.95rem', fontWeight: 700, background: 'var(--input-bg)', borderRadius: '6px' }}
                         value={editingTitle}
                         onChange={(e) => setEditingTitle(e.target.value)}
                         autoFocus
                       />
                       <AutoExpandingTextarea 
                         className="quick-add-input prompt-content"
-                        style={{ padding: '8px', fontSize: '0.85rem', background: 'var(--input-bg)', minHeight: '100px' }}
+                        style={{ padding: '8px', fontSize: '0.85rem', background: 'var(--input-bg)', minHeight: '100px', borderRadius: '6px', width: '100%', boxSizing: 'border-box' }}
                         value={editingText}
                         onChange={(e) => setEditingText(e.target.value)}
                       />
