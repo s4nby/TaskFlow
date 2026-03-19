@@ -173,8 +173,8 @@ function createWindow() {
       
       log.info('[Updater] Initializing autoUpdater. App version:', app.getVersion());
 
-      // UPDATER TESTING CONFIGURATION
-      const customFeedUrl = process.env.UPDATER_FEED_URL;
+      // Only honor custom updater feeds during local testing.
+      const customFeedUrl = app.isPackaged ? undefined : process.env.UPDATER_FEED_URL;
       const ghToken = process.env.GH_TOKEN;
       const allowPrerelease = process.env.UPDATER_ALLOW_PRERELEASE === 'true';
 
@@ -265,11 +265,18 @@ function createWindow() {
         log.info('[Updater] IPC received: start-update. Checking then downloading.');
         autoUpdater.checkForUpdates()
           .then((result) => {
-            if (result && result.updateInfo) {
+            if (result && result.downloadPromise) {
+              log.info('[Updater] start-update: download already in progress.');
+              return result.downloadPromise;
+            }
+            if (result && result.cancellationToken) {
               log.info('[Updater] start-update: update confirmed, starting download.');
               return autoUpdater.downloadUpdate();
             }
             log.warn('[Updater] start-update: no update info available, cannot download.');
+            if (mainWindow && !mainWindow.isDestroyed()) {
+              mainWindow.webContents.send('update-error', 'No downloadable update was found.');
+            }
           })
           .catch(err => {
             log.error('[Updater] start-update error:', err);

@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Task, ProjectList, DayData, ViewState, Priority, SubTask, UpdateStatus } from '../models/types';
-import packageJson from '../../package.json';
 
 export const useAppViewModel = () => {
   // Synchronous initialization for "Instant Launch"
@@ -30,65 +29,7 @@ export const useAppViewModel = () => {
   // Access Electron IPC via preload contextBridge
   const ipcRenderer = (window as any).electronAPI ?? null;
 
-  const checkForUpdates = useCallback(async () => {
-    logInfo('Update check triggered. Current Status: ' + updateStatus);
-    
-    // 1. Native Check (Main Process)
-    if (ipcRenderer) {
-      logInfo('Sending IPC: check-for-updates');
-      ipcRenderer.send('check-for-updates');
-    }
-
-    // 2. Fallback Manual Check (GitHub API)
-    try {
-      logInfo('Fetching latest release from GitHub API...');
-      const response = await fetch('https://api.github.com/repos/s4nby/TaskFlow/releases/latest');
-      if (response.ok) {
-        const release = await response.json();
-        const latestVersion = release.tag_name.replace('v', '');
-        
-        // Use package.json version as source of truth
-        const currentVersion = packageJson.version;
-        
-        logInfo(`Manual Check - Current: ${currentVersion}, Latest: ${latestVersion}`);
-
-        // Simple version comparison
-        const isNewer = (latest: string, current: string) => {
-          const l = latest.split('.').map(Number);
-          const c = current.split('.').map(Number);
-          for (let i = 0; i < Math.max(l.length, c.length); i++) {
-            const lv = l[i] || 0;
-            const cv = c[i] || 0;
-            if (lv > cv) return true;
-            if (lv < cv) return false;
-          }
-          return false;
-        };
-        
-        const newer = isNewer(latestVersion, currentVersion);
-        
-        if (newer) {
-          setUpdateStatus(prev => {
-            if (prev === 'none') {
-              logInfo('Manual Check - Update Available! Showing indicator.');
-              setAvailableVersion(latestVersion);
-              return 'available';
-            }
-            logInfo('Manual Check - No newer version found or already handling update.');
-            return prev;
-          });
-        } else {
-          logInfo('Manual Check - No newer version found or already handling update.');
-        }
-      } else {
-        logError('GitHub API check failed with status: ' + response.status);
-      }
-    } catch (err) {
-      logError('Manual Update Check Failed: ' + err);
-    }
-  }, [ipcRenderer]);
-
-  // Helper for consistent logging — dev only
+  // Helper for consistent logging â€” dev only
   function logInfo(msg: string) {
     if (import.meta.env.DEV) console.log('[Updater UI] ' + msg);
   }
@@ -96,6 +37,18 @@ export const useAppViewModel = () => {
     if (import.meta.env.DEV) console.error('[Updater UI] ' + msg);
   }
 
+  const checkForUpdates = useCallback(() => {
+    logInfo('Update check triggered. Current Status: ' + updateStatus);
+    
+    if (ipcRenderer) {
+      logInfo('Sending IPC: check-for-updates');
+      ipcRenderer.send('check-for-updates');
+    } else {
+      logError('Electron updater bridge is unavailable.');
+    }
+  }, [ipcRenderer, updateStatus]);
+
+  // Helper for consistent logging — dev only
   // Expose for dev console testing
   useEffect(() => {
     (window as any).forceUpdateCheck = checkForUpdates;
@@ -113,10 +66,13 @@ export const useAppViewModel = () => {
 
     const onUpdateNotAvailable = () => {
       logInfo('IPC - Update Not Available');
-      setUpdateStatus(prev => prev === 'available' ? 'none' : prev);
+      setAvailableVersion(null);
+      setDownloadProgress(0);
+      setUpdateStatus(prev => prev === 'available' || prev === 'downloading' ? 'none' : prev);
     };
 
     const onUpdateProgress = (progressObj: any) => {
+      setUpdateStatus('downloading');
       setDownloadProgress(Math.floor(progressObj?.percent ?? 0));
     };
 
@@ -127,7 +83,8 @@ export const useAppViewModel = () => {
 
     const onUpdateError = (message: string) => {
       logError('IPC - Update Error: ' + message);
-      setUpdateStatus('available'); // reset so user can retry
+      setDownloadProgress(0);
+      setUpdateStatus(prev => prev === 'downloading' ? 'available' : 'error');
     };
 
     const wrappedAvailable = ipcRenderer.on('update-available', onUpdateAvailable);

@@ -60,7 +60,7 @@
           ]
         }
       ],
-      "verifyUpdateCodeSignature": false
+      "verifyUpdateCodeSignature": true
     },
     "nsis": {
       "oneClick": false,
@@ -71,7 +71,7 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "TaskFlow",
-      "artifactName": "taskflow_setup.${ext}",
+      "artifactName": "${productName}-Setup-${version}.${ext}",
       "uninstallDisplayName": "TaskFlow",
       "runAfterFinish": true
     },
